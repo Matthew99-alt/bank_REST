@@ -1,0 +1,10 @@
+services:
+  db:
+    image: postgres:15.10-alpine3.20
+    container_name: bank_REST_data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 7890123456Upet
+      POSTGRES_DB: cardsdata
+    ports:
+      - "5434:5432"
