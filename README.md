@@ -21,19 +21,19 @@ REST API для управления банковскими картами с б
 
 Шаблоны post\edit запросов:
 TransactionDTO:
-{
+- {
     "fromCardId": 1,
     "toCardId": 2,
     "amount": 1000
 }
-CardDTO:
+- CardDTO:
 {
     "finalDate": "2025-11-11",
     "status": "ACTIVE",
     "balance": 100000,
     "userId": 452 
 }
-CardUserDTO:
+- CardUserDTO:
 {
     "firstName": "Иган",
     "secondName": "Иганов",
