@@ -20,8 +20,8 @@ REST API для управления банковскими картами с б
 Все исключения и удачные сценарии работы протестированы через MockMVC
 
 Шаблоны post\edit запросов:
-TransactionDTO:
-- {
+- TransactionDTO:
+{
     "fromCardId": 1,
     "toCardId": 2,
     "amount": 1000
