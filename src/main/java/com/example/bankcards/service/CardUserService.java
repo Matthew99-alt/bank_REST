@@ -8,8 +8,18 @@ import com.example.bankcards.mapper.CardUserMapper;
 import com.example.bankcards.repository.CardUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+/**
+ * Класс сервис отвечающий за реализацию запросов контроллера и работу с объектами класса Card
+ * @see  CardUser
+ * @see  CardUserRepository
+ * @see  CardUserDTO
+ * @see  CardUserMapper
+ * @see  com.example.bankcards.controller.CardUserController
+ */
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +28,7 @@ public class CardUserService {
     private final CardUserRepository cardUserRepository;
     private final CardUserMapper cardsUserMapper;
 
+    @Transactional(readOnly = true)
     public List<CardUserDTO> findAllCardUsers() {
         return cardUserRepository.findAll()
                 .stream()
@@ -25,12 +36,14 @@ public class CardUserService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public CardUserDTO findCardUserById(Long encodedId) {
         CardUser cardUser = cardUserRepository.findById(encodedId)
                 .orElseThrow(() -> new CustomEntityNotFoundException("Указанный пользователь не найден"));
         return cardsUserMapper.makeACardUserDTO(cardUser);
     }
 
+    @Transactional
     public CardUserDTO saveCardUser(CardUserDTO cardUserDTO){
 
         if (cardUserRepository.existsByEmail(cardUserDTO.getEmail())
@@ -42,10 +55,12 @@ public class CardUserService {
         return cardsUserMapper.makeACardUserDTO(savedCardUser);
     }
 
+    @Transactional
     public void deleteUserCard(Long id) {
         cardUserRepository.deleteById(id);
     }
 
+    @Transactional
     public CardUserDTO editUserCard(CardUserDTO cardUserDTO) {
         CardUser cardUser = cardsUserMapper.makeACardUser(cardUserDTO);
         cardUserRepository.save(cardUser);

@@ -4,27 +4,33 @@ import com.example.bankcards.dto.CardDTO;
 import com.example.bankcards.dto.CardUserDTO;
 import com.example.bankcards.dto.TransactionDTO;
 import com.example.bankcards.service.CardService;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Контроллер для запросов связанных с катрами
+*/
+
 @RestController
 @RequestMapping("/card")
+@CrossOrigin(origins = "http://localhost:8080")
 @RequiredArgsConstructor
 public class CardController {
 
     private final CardService cardService;
 
-    @GetMapping("/all")
-    public List<CardDTO> getAllCards() {
-        return cardService.findAllCards();
-    }
-
     @GetMapping("/")
     public CardDTO getACard(@RequestParam("id") Long id) {
         return cardService.findCardById(id);
+    }
+
+    @GetMapping("/all")
+    public List<CardDTO> getAllCards() {
+        return cardService.findAllCards();
     }
 
     @GetMapping("/userId/")

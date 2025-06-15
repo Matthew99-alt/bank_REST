@@ -7,6 +7,10 @@ import com.example.bankcards.util.Status;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+/**
+ * Маппер, отдельный класс для выполнения операций по переводу сущности карт в DTO и наоборот
+*/
+
 @Component
 @RequiredArgsConstructor
 public class CardMapper {

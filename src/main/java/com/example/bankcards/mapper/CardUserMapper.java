@@ -6,6 +6,10 @@ import com.example.bankcards.entity.CardUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+/**
+ * Маппер, отдельный класс для выполнения операций по переводу сущности пользователя в DTO и наоборот
+*/
+
 @Component
 @RequiredArgsConstructor
 public class CardUserMapper {

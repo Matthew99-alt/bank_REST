@@ -8,3 +8,4 @@ services:
       POSTGRES_DB: cardsdata
     ports:
       - "5434:5432"
+

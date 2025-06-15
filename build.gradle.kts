@@ -37,6 +37,10 @@ dependencies {
 
 	// Liquibase
 	implementation("org.liquibase:liquibase-core:4.31.0")
+
+	// Swagger
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
+
 }
 
 tasks.withType<Test> {

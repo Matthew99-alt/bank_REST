@@ -2,14 +2,20 @@ package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.CardUserDTO;
 import com.example.bankcards.service.CardUserService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Контроллер для запросов о пользователе
+ */
+
 @RestController
 @RequestMapping("/user")
+@CrossOrigin(origins = "http://localhost:8080")
 @RequiredArgsConstructor
 public class CardUserController {
 
@@ -25,6 +31,7 @@ public class CardUserController {
         return cardUserService.findCardUserById(id);
     }
 
+    @Operation(method = "POST")  // Явно указываем метод для Swagger
     @PostMapping("/save")
     public CardUserDTO saveACardUser(@RequestBody @Valid CardUserDTO cardUserDTO) {
         return cardUserService.saveCardUser(cardUserDTO);

@@ -8,6 +8,13 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.util.Date;
 
+/**
+ * Этот класс представляет данные таблицы card в виде объекта класса Card
+ * Снабжён геттерами и сеттерами через Lombock
+ * Является сущностью
+ * Класс предоставляет данные о картах
+ * имеет связь с таблицей card_user в виде "Многие к одному"
+ */
 @Getter
 @Setter
 @Entity

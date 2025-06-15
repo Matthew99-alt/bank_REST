@@ -15,6 +15,10 @@ import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolv
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * ControllerAdvice для корректного вывода сообщений об ошибках
+ */
+
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalControllerAdvice {

@@ -9,6 +9,11 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.util.Date;
 
+/**
+ * DTO для обработки информации о картах
+*/
+
+
 @Getter
 @Setter
 public class CardDTO {

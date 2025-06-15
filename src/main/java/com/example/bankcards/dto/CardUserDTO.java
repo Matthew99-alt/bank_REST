@@ -8,6 +8,10 @@ import lombok.Setter;
 
 import java.util.List;
 
+/**
+ * DTO для обработки информации о пользователе
+*/
+
 @Getter
 @Setter
 public class CardUserDTO {
