@@ -1,9 +1,13 @@
-FROM eclipse-temurin:21-jdk-jammy
+# Сборка приложения
+FROM gradle:8.7-jdk21 AS build
+WORKDIR /app
+COPY build.gradle.kts settings.gradle.kts ./
+COPY src ./src
+RUN gradle bootJar --no-daemon  # Собираем JAR
 
-WORKDIR /*
-
-COPY build/libs/bank_REST-0.0.1-SNAPSHOT.jar app.jar
-
+# Запуск
+FROM eclipse-temurin:21-jre-jammy
+WORKDIR /app
+COPY --from=build /app/build/libs/*.jar app.jar
 EXPOSE 8080
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "app.jar"]
