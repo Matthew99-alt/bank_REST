@@ -1,15 +1,11 @@
 package com.example.bankcards.service;
 
 import com.example.bankcards.dto.CardDTO;
-import com.example.bankcards.dto.CardUserDTO;
 import com.example.bankcards.dto.TransactionDTO;
 import com.example.bankcards.entity.Card;
-import com.example.bankcards.entity.CardUser;
 import com.example.bankcards.exception.*;
 import com.example.bankcards.mapper.CardMapper;
-import com.example.bankcards.mapper.CardUserMapper;
 import com.example.bankcards.repository.CardRepository;
-import com.example.bankcards.repository.CardUserRepository;
 import com.example.bankcards.util.Status;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

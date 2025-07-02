@@ -6,10 +6,14 @@ import com.example.bankcards.exception.CustomEntityNotFoundException;
 import com.example.bankcards.exception.UnuniqueParameterException;
 import com.example.bankcards.mapper.CardUserMapper;
 import com.example.bankcards.repository.CardUserRepository;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -22,11 +26,47 @@ import java.util.List;
  */
 
 @Service
-@RequiredArgsConstructor
 public class CardUserService {
 
     private final CardUserRepository cardUserRepository;
+
     private final CardUserMapper cardsUserMapper;
+
+    private Long id;
+
+    private String firstName;
+
+    private String secondName;
+
+    private String middleName;
+
+    private String email;
+
+    private String roles;
+
+    private String phoneNumber;
+
+    @JsonIgnore
+    private String password;
+
+    private final Collection<? extends GrantedAuthority> authorities;
+
+    public CardUserService(Long id, String firstName, String secondName, String middleName, String email, String phoneNumber, Collection<? extends GrantedAuthority> authorities) {
+        this.id = id;
+        this.firstName = firstName;
+        this.secondName = secondName;
+        this.middleName = middleName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.authorities = authorities;
+    }
+
+    public CardUserService(CardUserRepository cardUserRepository, CardUserMapper cardUserMapper){
+        this.cardUserRepository = cardUserRepository;
+        this.cardsUserMapper = cardUserMapper;
+    }
+
+
 
     @Transactional(readOnly = true)
     public List<CardUserDTO> findAllCardUsers() {
@@ -53,6 +93,19 @@ public class CardUserService {
 
         CardUser savedCardUser = cardUserRepository.save(cardsUserMapper.makeACardUser(cardUserDTO));
         return cardsUserMapper.makeACardUserDTO(savedCardUser);
+    }
+
+    public static CardUserService build(CardUser user) {
+        GrantedAuthority authorities =  new SimpleGrantedAuthority(user.getRole().toString());
+
+        return new CardUserService(
+                user.getId(),
+                user.getFirstName(),
+                user.getSecondName(),
+                user.getMiddleName(),
+                user.getEmail(),
+                user.getPhoneNumber(),
+                authorities);
     }
 
     @Transactional

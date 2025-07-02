@@ -28,4 +28,5 @@ public class CardUserDTO {
 
     private String phoneNumber;
 
+    private String role;
 }

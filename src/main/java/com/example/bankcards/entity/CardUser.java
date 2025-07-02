@@ -1,5 +1,6 @@
 package com.example.bankcards.entity;
 
+import com.example.bankcards.util.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,5 +38,9 @@ public class CardUser {
 
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
+
+    @Column(name = "card_user_role", nullable = false)
+    private Role role;
+
 
 }
