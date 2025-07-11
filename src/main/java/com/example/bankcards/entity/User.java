@@ -1,6 +1,5 @@
 package com.example.bankcards.entity;
 
-import com.example.bankcards.util.RoleEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,8 +17,8 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "card_user")
-public class CardUser {
+@Table(name = "card_user") // todo: поправить миграцию и имя таблицы
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

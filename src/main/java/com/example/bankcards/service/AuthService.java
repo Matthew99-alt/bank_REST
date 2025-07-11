@@ -4,7 +4,7 @@ import com.example.bankcards.dto.JwtResponse;
 import com.example.bankcards.dto.LoginRequest;
 import com.example.bankcards.dto.MessageResponse;
 import com.example.bankcards.dto.SignupRequest;
-import com.example.bankcards.entity.CardUser;
+import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.util.RoleEnum;
 import com.example.bankcards.repository.CardUserRepository;
@@ -45,7 +45,7 @@ public class AuthService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
 
-        CardUserDetailsImpl userDetails = (CardUserDetailsImpl) authentication.getPrincipal();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
@@ -64,7 +64,7 @@ public class AuthService {
         }
 
         // Create new user's account
-        CardUser user = userRepository.findByEmail(signUpRequest.getEmail()).orElseThrow(() -> new EntityNotFoundException("Указанный пользователь не найден"));
+        User user = userRepository.findByEmail(signUpRequest.getEmail()).orElseThrow(() -> new EntityNotFoundException("Указанный пользователь не найден"));
 
         Set<String> strRoles = signUpRequest.getRole();
         Set<Role> roles = new HashSet<>();

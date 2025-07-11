@@ -1,10 +1,6 @@
 package com.example.bankcards.util;
 
-import com.example.bankcards.dto.CardUserDTO;
-import com.example.bankcards.entity.CardUser;
-import com.example.bankcards.service.CardService;
 import com.example.bankcards.service.CardUserDetailsService;
-import com.example.bankcards.service.CardUserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,6 +1,6 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.entity.CardUser;
+import com.example.bankcards.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,12 +12,14 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class CardUserDetailsFactory {
-    public CardUserDetailsImpl build(CardUser user) {
+    //todo: фактори названием говорит о том что производит, у тебя на выходе  UserDetailsImpl!
+    // может перенести в UserDetailsImpl в виде билдера?
+    public UserDetailsImpl build(User user) {
         List<GrantedAuthority> authorities = user.getRole().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName().name()))
                 .collect(Collectors.toList());
 
-        return new CardUserDetailsImpl(
+        return new UserDetailsImpl(
                 user.getId(),
                 user.getFirstName()+" "+user.getSecondName()+" "+user.getMiddleName(),
                 user.getEmail(),

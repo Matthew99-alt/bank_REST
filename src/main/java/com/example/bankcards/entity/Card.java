@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 /**
  * Этот класс представляет данные таблицы card в виде объекта класса Card
@@ -18,7 +17,7 @@ import java.util.Date;
 @Getter
 @Setter
 @Entity
-@Table(name = "card")
+@Table(name = "card") // todo: поправить миграцию и имя таблицы cardS
 public class Card {
 
     @Id
@@ -36,5 +35,5 @@ public class Card {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private CardUser user;
+    private User user;
 }

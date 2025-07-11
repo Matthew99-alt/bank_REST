@@ -17,7 +17,7 @@ import java.util.List;
 @RequestMapping("/user")
 @CrossOrigin(origins = "http://localhost:8080")
 @RequiredArgsConstructor
-public class CardUserController {
+public class CardUserController { // todo: нет такого больше! карточного пользователя!
 
     private final CardUserService cardUserService;
 

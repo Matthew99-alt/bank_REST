@@ -3,7 +3,11 @@ package com.example.bankcards.service;
 import com.example.bankcards.dto.CardDTO;
 import com.example.bankcards.dto.TransactionDTO;
 import com.example.bankcards.entity.Card;
-import com.example.bankcards.exception.*;
+import com.example.bankcards.exception.CustomEntityNotFoundException;
+import com.example.bankcards.exception.DifferentIdentifierException;
+import com.example.bankcards.exception.NegativeBalanceException;
+import com.example.bankcards.exception.SameCardException;
+import com.example.bankcards.exception.UnactiveCardException;
 import com.example.bankcards.mapper.CardMapper;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.util.Status;
@@ -17,11 +21,12 @@ import java.util.Objects;
 
 /**
  * Класс сервис отвечающий за реализацию запросов контроллера и работу с объектами класса Card
- * @see  Card
- * @see  CardRepository
- * @see  CardDTO
- * @see  CardMapper
- * @see  com.example.bankcards.controller.CardController
+ *
+ * @see Card
+ * @see CardRepository
+ * @see CardDTO
+ * @see CardMapper
+ * @see com.example.bankcards.controller.CardController
  */
 
 @Service
@@ -49,12 +54,12 @@ public class CardService {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public CardDTO saveCard(CardDTO cardDTO) {
 
-            if(cardDTO.getBalance()<0){
-                throw new NegativeBalanceException("Balance should be more than zero");
-            }
+        if (cardDTO.getBalance() < 0) {
+            throw new NegativeBalanceException("Balance should be more than zero");
+        }
 
-            Card savedCard = cardRepository.save(cardMapper.makeACard(cardDTO));
-            return cardMapper.makeACardDTO(savedCard);
+        Card savedCard = cardRepository.save(cardMapper.makeACard(cardDTO));
+        return cardMapper.makeACardDTO(savedCard);
     }
 
     @Transactional
@@ -73,22 +78,24 @@ public class CardService {
 
     @Transactional
     public CardDTO outdateCard(Long cardId) {
+        //todo: Матвей, ты не можешь управлять временем! даже если это можно в аниме)
+        // поэтому ты можешь заблокировать карту, изменить ее статус, а время все же отдай шедулеру (если хочешь)
         Card card = cardRepository.findById(cardId).orElseThrow();
         card.setStatus(Status.OUTDATED);
         return cardMapper.makeACardDTO(cardRepository.save(card));
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public TransactionDTO doTransaction(TransactionDTO transactionDTO){
+    public TransactionDTO doTransaction(TransactionDTO transactionDTO) {
 
         Card getFromCard = cardRepository.getReferenceById(transactionDTO.getFromCardId());
         Card getToCard = cardRepository.getReferenceById(transactionDTO.getToCardId());
 
-        if(!Objects.equals(getToCard.getUser().getId(), getFromCard.getUser().getId())){
+        if (!Objects.equals(getToCard.getUser().getId(), getFromCard.getUser().getId())) {
             throw new DifferentIdentifierException("Id of users of cards are different");
         }
 
-        if(transactionDTO.getAmount()<0){
+        if (transactionDTO.getAmount() < 0) {
             throw new NegativeBalanceException("Amount should be more than zero");
         }
 
@@ -96,24 +103,24 @@ public class CardService {
             throw new UnactiveCardException("Both cards must be active for transaction");
         }
 
-        if(Objects.equals(getToCard.getId(), getFromCard.getId())){
+        if (Objects.equals(getToCard.getId(), getFromCard.getId())) {
             throw new SameCardException("The cards for transaction are the same");
         }
 
-        getFromCard.setBalance(getFromCard.getBalance()-transactionDTO.getAmount());
-        getToCard.setBalance(getToCard.getBalance()+transactionDTO.getAmount());
+        getFromCard.setBalance(getFromCard.getBalance() - transactionDTO.getAmount());
+        getToCard.setBalance(getToCard.getBalance() + transactionDTO.getAmount());
 
         return transactionDTO;
-    }
+    } // todo: имя метода не отражает суть
 
     @Transactional(readOnly = true)
-    public List<CardDTO> findByUserId(Long userId){
+    public List<CardDTO> findByUserId(Long userId) {
         return cardRepository.findAll()
                 .stream()
                 .filter(card -> card.getUser().getId().equals(userId))
                 .map(cardMapper::makeACardDTO)
                 .toList();
-    };
+    }
 
     @Transactional
     public void deleteCard(Long id) {

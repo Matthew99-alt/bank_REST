@@ -2,7 +2,7 @@ package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.TransactionDTO;
 import com.example.bankcards.entity.Card;
-import com.example.bankcards.entity.CardUser;
+import com.example.bankcards.entity.User;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.CardUserRepository;
 import com.example.bankcards.util.Status;
@@ -233,19 +233,19 @@ public class CardControllerTest {
     public void testTransferCard_differentUsers() throws Exception {
         TransactionDTO transactionDTO = makeATransactionDTOForTests();
 
-        CardUser cardUser = new CardUser();
-        cardUser.setPhoneNumber("+79740012325");
-        cardUser.setEmail("hellohello@gmail.com");
-        cardUser.setFirstName("Павел");
-        cardUser.setMiddleName("Павлов");
-        cardUser.setSecondName("Павлович");
+        User user = new User();
+        user.setPhoneNumber("+79740012325");
+        user.setEmail("hellohello@gmail.com");
+        user.setFirstName("Павел");
+        user.setMiddleName("Павлов");
+        user.setSecondName("Павлович");
 
-        cardUserRepository.save(cardUser);
+        cardUserRepository.save(user);
 
         Card card = new Card();
 
         card.setStatus(Status.ACTIVE);
-        card.setUser(cardUser);
+        card.setUser(user);
         card.setBalance(10000L);
         card.setFinalDate(LocalDate.parse("2025-12-31"));
 
@@ -316,25 +316,25 @@ public class CardControllerTest {
 
     private Card makeACardForTests() {
         Card card = new Card();
-        CardUser cardUser = makeACardUserForTests();
+        User user = makeACardUserForTests();
 
 
         card.setStatus(Status.ACTIVE);
-        card.setUser(cardUser);
+        card.setUser(user);
         card.setBalance(10000L);
         card.setFinalDate(LocalDate.parse("2025-12-31"));
 
         return cardRepository.save(card);
     }
-    private CardUser makeACardUserForTests() {
-        CardUser cardUser = new CardUser();
-        cardUser.setPhoneNumber("+79540012325");
-        cardUser.setEmail("hellothere@gmail.com");
-        cardUser.setFirstName("Павел");
-        cardUser.setMiddleName("Павлов");
-        cardUser.setSecondName("Павлович");
+    private User makeACardUserForTests() {
+        User user = new User();
+        user.setPhoneNumber("+79540012325");
+        user.setEmail("hellothere@gmail.com");
+        user.setFirstName("Павел");
+        user.setMiddleName("Павлов");
+        user.setSecondName("Павлович");
 
-        return cardUserRepository.save(cardUser);
+        return cardUserRepository.save(user);
     }
 
     private TransactionDTO makeATransactionDTOForTests(){

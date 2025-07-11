@@ -1,6 +1,6 @@
 package com.example.bankcards.controller;
 
-import com.example.bankcards.entity.CardUser;
+import com.example.bankcards.entity.User;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.CardUserRepository;
 import jakarta.transaction.Transactional;
@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-public class CardUserTest {
+public class UserTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -49,7 +49,7 @@ public class CardUserTest {
     @Test
     @Transactional
     public void testGetCardUserById() throws Exception {
-        CardUser user = makeACardUserForTests();
+        User user = makeACardUserForTests();
 
         mockMvc.perform(
                         get("/user/").param("id", user.getId().toString())
@@ -84,24 +84,24 @@ public class CardUserTest {
     @Transactional
     public void testDeleteUser() throws Exception {
 
-        CardUser cardUser = makeACardUserForTests();
+        User user = makeACardUserForTests();
 
         mockMvc.perform(
-                        delete("/user/delete").param("id", cardUser.getId().toString())
+                        delete("/user/delete").param("id", user.getId().toString())
                 )
                 .andExpect(status().isOk());
 
-        Assertions.assertFalse(cardRepository.findById(cardUser.getId()).isPresent());
+        Assertions.assertFalse(cardRepository.findById(user.getId()).isPresent());
     }
 
     @Test
     @Transactional
     public void testEditUser() throws Exception {
 
-        CardUser cardUser = makeACardUserForTests();
+        User user = makeACardUserForTests();
 
         String requestBody = "{\n" +
-                "    \"id\":\"" + cardUser.getId() + "\",\n" +
+                "    \"id\":\"" + user.getId() + "\",\n" +
                 "    \"firstName\": \"Иган\",\n" +
                 "    \"secondName\": \"Иганов\",\n" +
                 "    \"middleName\": \"Иванович\",\n" +
@@ -118,14 +118,14 @@ public class CardUserTest {
                 );
     }
 
-    private CardUser makeACardUserForTests() {
-        CardUser cardUser = new CardUser();
-        cardUser.setPhoneNumber("+79540012325");
-        cardUser.setEmail("helloooooo@gmail.com");
-        cardUser.setFirstName("Павел");
-        cardUser.setMiddleName("Павлов");
-        cardUser.setSecondName("Павлович");
+    private User makeACardUserForTests() {
+        User user = new User();
+        user.setPhoneNumber("+79540012325");
+        user.setEmail("helloooooo@gmail.com");
+        user.setFirstName("Павел");
+        user.setMiddleName("Павлов");
+        user.setSecondName("Павлович");
 
-        return cardUserRepository.save(cardUser);
+        return cardUserRepository.save(user);
     }
 }

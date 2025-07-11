@@ -1,8 +1,7 @@
 package com.example.bankcards.mapper;
 
 import com.example.bankcards.dto.CardUserDTO;
-import com.example.bankcards.entity.Card;
-import com.example.bankcards.entity.CardUser;
+import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,30 +16,30 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class CardUserMapper {
-    public CardUser makeACardUser(CardUserDTO cardUserDTO) {
-        CardUser cardUser = new CardUser();
+    public User makeACardUser(CardUserDTO cardUserDTO) {
+        User user = new User();
 
-        cardUser.setId(cardUserDTO.getId());
-        cardUser.setFirstName(cardUserDTO.getFirstName());
-        cardUser.setMiddleName(cardUserDTO.getMiddleName());
-        cardUser.setSecondName(cardUserDTO.getSecondName());
-        cardUser.setEmail(cardUserDTO.getEmail());
-        cardUser.setPassword(cardUserDTO.getPassword());
-        cardUser.setPhoneNumber(cardUserDTO.getPhoneNumber());
+        user.setId(cardUserDTO.getId());
+        user.setFirstName(cardUserDTO.getFirstName());
+        user.setMiddleName(cardUserDTO.getMiddleName());
+        user.setSecondName(cardUserDTO.getSecondName());
+        user.setEmail(cardUserDTO.getEmail());
+        user.setPassword(cardUserDTO.getPassword());
+        user.setPhoneNumber(cardUserDTO.getPhoneNumber());
 
-        return cardUser;
+        return user;
     }
-    public CardUserDTO makeACardUserDTO(CardUser cardUser) {
+    public CardUserDTO makeACardUserDTO(User user) {
         CardUserDTO cardUserDTO = new CardUserDTO();
 
-        cardUserDTO.setId(cardUser.getId());
-        cardUserDTO.setFirstName(cardUser.getFirstName());
-        cardUserDTO.setMiddleName(cardUser.getMiddleName());
-        cardUserDTO.setSecondName(cardUser.getSecondName());
-        cardUserDTO.setEmail(cardUser.getEmail());
-        cardUserDTO.setPhoneNumber(cardUser.getPhoneNumber());
+        cardUserDTO.setId(user.getId());
+        cardUserDTO.setFirstName(user.getFirstName());
+        cardUserDTO.setMiddleName(user.getMiddleName());
+        cardUserDTO.setSecondName(user.getSecondName());
+        cardUserDTO.setEmail(user.getEmail());
+        cardUserDTO.setPhoneNumber(user.getPhoneNumber());
 
-        Set<Long> roleIds = cardUser.getRole().stream()
+        Set<Long> roleIds = user.getRole().stream()
                 .map(Role::getId)
                 .collect(Collectors.toSet());
         cardUserDTO.setRoleIds(roleIds);
