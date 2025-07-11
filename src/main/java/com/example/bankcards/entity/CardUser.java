@@ -1,11 +1,12 @@
 package com.example.bankcards.entity;
 
-import com.example.bankcards.util.Role;
+import com.example.bankcards.util.RoleEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Этот класс представляет данные таблицы card_user в виде объекта класса CardUser
@@ -36,11 +37,16 @@ public class CardUser {
     @Column(name = "email", nullable = false)
     private String email;
 
+    @Column(name = "password", nullable = false)
+    private String password;
+
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
 
-    @Column(name = "card_user_role", nullable = false)
-    private Role role;
-
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> role = new HashSet<>();
 
 }

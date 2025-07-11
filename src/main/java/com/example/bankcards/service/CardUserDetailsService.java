@@ -15,10 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class CardUserDetailsService implements UserDetailsService {
 
     private final CardUserRepository userRepository;
+
+    private final CardUserDetailsFactory cardUserDetailsFactory;
+
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         CardUser user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
-        return CardUserService.build(user);
+        return cardUserDetailsFactory.build(user);
     }
 }

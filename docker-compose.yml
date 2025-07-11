@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: bank_rest_app
     ports:
-      - "8080:8080"
+      - "8484:8484"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/cardsdata
       - SPRING_DATASOURCE_USERNAME=postgres

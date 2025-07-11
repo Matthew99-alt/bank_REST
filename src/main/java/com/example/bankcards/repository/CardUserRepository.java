@@ -13,7 +13,7 @@ import java.util.Optional;
 */
 @Repository
 public interface CardUserRepository extends JpaRepository<CardUser, Long> {
-    boolean existsByEmail(String email);
-    boolean existsByPhoneNumber(String phone);
+    Boolean existsByEmail(String email);
+    Boolean existsByPhoneNumber(String phone);
     Optional<CardUser> findByEmail(String email);
 }

@@ -2,10 +2,12 @@ package com.example.bankcards.service;
 
 import com.example.bankcards.dto.CardUserDTO;
 import com.example.bankcards.entity.CardUser;
+import com.example.bankcards.entity.Role;
 import com.example.bankcards.exception.CustomEntityNotFoundException;
 import com.example.bankcards.exception.UnuniqueParameterException;
 import com.example.bankcards.mapper.CardUserMapper;
 import com.example.bankcards.repository.CardUserRepository;
+import com.example.bankcards.repository.RoleRepository;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,9 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Класс сервис отвечающий за реализацию запросов контроллера и работу с объектами класса Card
+ * Класс сервис отвечающий за реализацию запросов контроллера и работу с объектами класса CardUser
  * @see  CardUser
  * @see  CardUserRepository
  * @see  CardUserDTO
@@ -26,46 +29,14 @@ import java.util.List;
  */
 
 @Service
+@RequiredArgsConstructor
 public class CardUserService {
 
     private final CardUserRepository cardUserRepository;
 
     private final CardUserMapper cardsUserMapper;
 
-    private Long id;
-
-    private String firstName;
-
-    private String secondName;
-
-    private String middleName;
-
-    private String email;
-
-    private String roles;
-
-    private String phoneNumber;
-
-    @JsonIgnore
-    private String password;
-
-    private final Collection<? extends GrantedAuthority> authorities;
-
-    public CardUserService(Long id, String firstName, String secondName, String middleName, String email, String phoneNumber, Collection<? extends GrantedAuthority> authorities) {
-        this.id = id;
-        this.firstName = firstName;
-        this.secondName = secondName;
-        this.middleName = middleName;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.authorities = authorities;
-    }
-
-    public CardUserService(CardUserRepository cardUserRepository, CardUserMapper cardUserMapper){
-        this.cardUserRepository = cardUserRepository;
-        this.cardsUserMapper = cardUserMapper;
-    }
-
+    private final RoleRepository roleRepository;
 
 
     @Transactional(readOnly = true)
@@ -92,20 +63,11 @@ public class CardUserService {
         }
 
         CardUser savedCardUser = cardUserRepository.save(cardsUserMapper.makeACardUser(cardUserDTO));
+
+        Set<Role> roles = roleRepository.findAllById(cardUserDTO.getRoleIds());
+        savedCardUser.setRole(roles);
+
         return cardsUserMapper.makeACardUserDTO(savedCardUser);
-    }
-
-    public static CardUserService build(CardUser user) {
-        GrantedAuthority authorities =  new SimpleGrantedAuthority(user.getRole().toString());
-
-        return new CardUserService(
-                user.getId(),
-                user.getFirstName(),
-                user.getSecondName(),
-                user.getMiddleName(),
-                user.getEmail(),
-                user.getPhoneNumber(),
-                authorities);
     }
 
     @Transactional

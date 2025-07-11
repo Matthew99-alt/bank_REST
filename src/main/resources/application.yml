@@ -1,5 +1,6 @@
 #
 # application.yml — главный конфигурационный файл Spring Boot.
+#
 
 spring:
   datasource:
@@ -18,4 +19,8 @@ spring:
           issuer-uri: http://localhost:8083/auth/realms/baeldung
           jwk-set-uri: http://localhost:8083/auth/realms/baeldung/protocol/openid-connect/certs
   liquibase:
+    drop-first: true  # Очистит все перед применением миграций
     change-log: classpath:/db/migration/db.migration-master.yml
+security:
+  token: tstrs4g434wyhser5htstrs4g434wyhser5htstrs4g434wyhser5htstrs4g434wyhser5htstrs4g434wyhser5h
+  expiration: 86400000 #ms дата и время когда токен все, прибавляется ко моменту создания
