@@ -76,17 +76,8 @@ public class CardService {
         return cardMapper.makeACardDTO(cardRepository.save(card));
     }
 
-    @Transactional
-    public CardDTO outdateCard(Long cardId) {
-        //todo: Матвей, ты не можешь управлять временем! даже если это можно в аниме)
-        // поэтому ты можешь заблокировать карту, изменить ее статус, а время все же отдай шедулеру (если хочешь)
-        Card card = cardRepository.findById(cardId).orElseThrow();
-        card.setStatus(Status.OUTDATED);
-        return cardMapper.makeACardDTO(cardRepository.save(card));
-    }
-
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public TransactionDTO doTransaction(TransactionDTO transactionDTO) {
+    public TransactionDTO internalCardTransfer(TransactionDTO transactionDTO) {
 
         Card getFromCard = cardRepository.getReferenceById(transactionDTO.getFromCardId());
         Card getToCard = cardRepository.getReferenceById(transactionDTO.getToCardId());

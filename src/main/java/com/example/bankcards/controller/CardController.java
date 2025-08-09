@@ -53,11 +53,6 @@ public class CardController {
         return cardService.activateCard(cardId);
     }
 
-    @PostMapping("/outdated/")
-    public CardDTO outdateCard(@RequestParam("id") Long cardId) {
-        return cardService.outdateCard(cardId);
-    }
-
     @DeleteMapping("/delete")
     public void deleteACard(@RequestParam("id") Long id) {
         cardService.deleteCard(id);
@@ -69,7 +64,7 @@ public class CardController {
     }
 
     @PostMapping("/transaction")
-    public TransactionDTO doTransaction(@RequestBody TransactionDTO transactionDTO){
-        return cardService.doTransaction(transactionDTO);
+    public TransactionDTO internalCardTransfer(@RequestBody TransactionDTO transactionDTO){
+        return cardService.internalCardTransfer(transactionDTO);
     }
 }

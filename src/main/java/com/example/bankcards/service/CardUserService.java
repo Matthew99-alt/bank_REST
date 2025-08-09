@@ -5,9 +5,9 @@ import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.exception.CustomEntityNotFoundException;
 import com.example.bankcards.exception.UnuniqueParameterException;
-import com.example.bankcards.mapper.CardUserMapper;
-import com.example.bankcards.repository.CardUserRepository;
+import com.example.bankcards.mapper.UserMapper;
 import com.example.bankcards.repository.RoleRepository;
+import com.example.bankcards.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,65 +18,62 @@ import java.util.Set;
 /**
  * Класс сервис отвечающий за реализацию запросов контроллера и работу с объектами класса CardUser
  * @see  User
- * @see  CardUserRepository
+ * @see  UsersRepository
  * @see  CardUserDTO
- * @see  CardUserMapper
- * @see  com.example.bankcards.controller.CardUserController
+ * @see  UserMapper
+ * @see  com.example.bankcards.controller.UserController
  */
 
 @Service
 @RequiredArgsConstructor
-public class CardUserService {
-    //todo: ты работаешь тут с пользователями!
-    // карты тут не нужны!, но если вдруг надо то можно сходить за ними
+public class UserService {
+    private final UsersRepository userRepository;
 
-    private final CardUserRepository cardUserRepository;
-
-    private final CardUserMapper cardsUserMapper;
+    private final UserMapper userMapper;
 
     private final RoleRepository roleRepository;
 
 
     @Transactional(readOnly = true)
     public List<CardUserDTO> findAllCardUsers() {
-        return cardUserRepository.findAll()
+        return userRepository.findAll()
                 .stream()
-                .map(cardsUserMapper::makeACardUserDTO)
+                .map(userMapper::makeACardUserDTO)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public CardUserDTO findCardUserById(Long encodedId) {
-        User user = cardUserRepository.findById(encodedId)
+        User user = userRepository.findById(encodedId)
                 .orElseThrow(() -> new CustomEntityNotFoundException("Указанный пользователь не найден"));
-        return cardsUserMapper.makeACardUserDTO(user);
+        return userMapper.makeACardUserDTO(user);
     }
 
     @Transactional
     public CardUserDTO saveCardUser(CardUserDTO cardUserDTO){
 
-        if (cardUserRepository.existsByEmail(cardUserDTO.getEmail())
-                ||cardUserRepository.existsByPhoneNumber(cardUserDTO.getPhoneNumber())){
+        if (userRepository.existsByEmail(cardUserDTO.getEmail())
+                ||userRepository.existsByPhoneNumber(cardUserDTO.getPhoneNumber())){
             throw new UnuniqueParameterException("Email and phone number should be unique");
         }
 
-        User savedUser = cardUserRepository.save(cardsUserMapper.makeACardUser(cardUserDTO));
+        User savedUser = userRepository.save(userMapper.makeACardUser(cardUserDTO));
 
         Set<Role> roles = roleRepository.findAllById(cardUserDTO.getRoleIds());
         savedUser.setRole(roles);
 
-        return cardsUserMapper.makeACardUserDTO(savedUser);
+        return userMapper.makeACardUserDTO(savedUser);
     }
 
     @Transactional
     public void deleteUserCard(Long id) {
-        cardUserRepository.deleteById(id);
+        userRepository.deleteById(id);
     }
 
     @Transactional
     public CardUserDTO editUserCard(CardUserDTO cardUserDTO) {
-        User user = cardsUserMapper.makeACardUser(cardUserDTO);
-        cardUserRepository.save(user);
+        User user = userMapper.makeACardUser(cardUserDTO);
+        userRepository.save(user);
         return cardUserDTO;
     }
 }

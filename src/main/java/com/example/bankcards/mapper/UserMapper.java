@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class CardUserMapper {
+public class UserMapper {
     public User makeACardUser(CardUserDTO cardUserDTO) {
         User user = new User();
 

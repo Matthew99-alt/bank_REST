@@ -4,7 +4,7 @@ databaseChangeLog:
       author: matthew
       changes:
         - createTable:
-            tableName: card_user
+            tableName: users
             columns:
               - column:
                   name: id
@@ -44,7 +44,7 @@ databaseChangeLog:
       author: matthew
       changes:
         - createTable:
-            tableName: card
+            tableName: cards
             columns:
               - column:
                   name: id

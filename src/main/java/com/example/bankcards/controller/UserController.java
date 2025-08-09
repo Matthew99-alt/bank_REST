@@ -1,7 +1,7 @@
 package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.CardUserDTO;
-import com.example.bankcards.service.CardUserService;
+import com.example.bankcards.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,33 +17,33 @@ import java.util.List;
 @RequestMapping("/user")
 @CrossOrigin(origins = "http://localhost:8080")
 @RequiredArgsConstructor
-public class CardUserController { // todo: нет такого больше! карточного пользователя!
+public class UserController {
 
-    private final CardUserService cardUserService;
+    private final UserService userService;
 
     @GetMapping("/all")
     public List<CardUserDTO> getAllCardsUsers() {
-        return cardUserService.findAllCardUsers();
+        return userService.findAllCardUsers();
     }
 
     @GetMapping("/")
     public CardUserDTO getACardUser(@RequestParam("id") Long id) {
-        return cardUserService.findCardUserById(id);
+        return userService.findCardUserById(id);
     }
 
     @Operation(method = "POST")  // Явно указываем метод для Swagger
     @PostMapping("/save")
     public CardUserDTO saveACardUser(@RequestBody @Valid CardUserDTO cardUserDTO) {
-        return cardUserService.saveCardUser(cardUserDTO);
+        return userService.saveCardUser(cardUserDTO);
     }
 
     @DeleteMapping("/delete")
     public void deleteACardUser(@RequestParam("id") Long id) {
-        cardUserService.deleteUserCard(id);
+        userService.deleteUserCard(id);
     }
 
     @PutMapping("/edit")
     public CardUserDTO editACardUser(@RequestBody @Valid CardUserDTO cardUserDTO) {
-        return cardUserService.editUserCard(cardUserDTO);
+        return userService.editUserCard(cardUserDTO);
     }
 }

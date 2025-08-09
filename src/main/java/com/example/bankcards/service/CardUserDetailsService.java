@@ -1,7 +1,7 @@
 package com.example.bankcards.service;
 
 import com.example.bankcards.entity.User;
-import com.example.bankcards.repository.CardUserRepository;
+import com.example.bankcards.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CardUserDetailsService implements UserDetailsService {
 
-    private final CardUserRepository userRepository;
+    private final UsersRepository userRepository;
 
     private final CardUserDetailsFactory cardUserDetailsFactory;
 

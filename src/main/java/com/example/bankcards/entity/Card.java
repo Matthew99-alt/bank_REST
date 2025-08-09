@@ -17,7 +17,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Entity
-@Table(name = "card") // todo: поправить миграцию и имя таблицы cardS
+@Table(name = "cards")
 public class Card {
 
     @Id

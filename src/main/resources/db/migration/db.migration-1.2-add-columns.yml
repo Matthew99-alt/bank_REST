@@ -5,7 +5,7 @@ databaseChangeLog:
       changes:
         # Добавляем отсутствующее поле password в card_user
         - addColumn:
-            tableName: card_user
+            tableName: users
             columns:
               - column:
                   name: password

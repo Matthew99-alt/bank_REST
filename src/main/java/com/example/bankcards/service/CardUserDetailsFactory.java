@@ -12,8 +12,6 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class CardUserDetailsFactory {
-    //todo: фактори названием говорит о том что производит, у тебя на выходе  UserDetailsImpl!
-    // может перенести в UserDetailsImpl в виде билдера?
     public UserDetailsImpl build(User user) {
         List<GrantedAuthority> authorities = user.getRole().stream()
                 .map(role -> new SimpleGrantedAuthority(role.getName().name()))
