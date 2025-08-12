@@ -1,8 +1,8 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.dto.CardUserDTO;
+import com.example.bankcards.dto.SignupRequest;
+import com.example.bankcards.dto.UserDTO;
 import com.example.bankcards.entity.User;
-import com.example.bankcards.entity.Role;
 import com.example.bankcards.exception.CustomEntityNotFoundException;
 import com.example.bankcards.exception.UnuniqueParameterException;
 import com.example.bankcards.mapper.UserMapper;
@@ -13,13 +13,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Класс сервис отвечающий за реализацию запросов контроллера и работу с объектами класса CardUser
  * @see  User
  * @see  UsersRepository
- * @see  CardUserDTO
+ * @see  UserDTO
  * @see  UserMapper
  * @see  com.example.bankcards.controller.UserController
  */
@@ -33,47 +32,54 @@ public class UserService {
 
     private final RoleRepository roleRepository;
 
+    private final AuthService authService;
+
 
     @Transactional(readOnly = true)
-    public List<CardUserDTO> findAllCardUsers() {
+    public List<UserDTO> findAllUsers() {
         return userRepository.findAll()
                 .stream()
-                .map(userMapper::makeACardUserDTO)
+                .map(userMapper::makeAUserDTO)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public CardUserDTO findCardUserById(Long encodedId) {
+    public UserDTO findUserById(Long encodedId) {
         User user = userRepository.findById(encodedId)
                 .orElseThrow(() -> new CustomEntityNotFoundException("Указанный пользователь не найден"));
-        return userMapper.makeACardUserDTO(user);
+        return userMapper.makeAUserDTO(user);
     }
 
     @Transactional
-    public CardUserDTO saveCardUser(CardUserDTO cardUserDTO){
+    public UserDTO saveUser(UserDTO userDTO){
 
-        if (userRepository.existsByEmail(cardUserDTO.getEmail())
-                ||userRepository.existsByPhoneNumber(cardUserDTO.getPhoneNumber())){
+        if (userRepository.existsByEmail(userDTO.getEmail())
+                ||userRepository.existsByPhoneNumber(userDTO.getPhoneNumber())){
             throw new UnuniqueParameterException("Email and phone number should be unique");
         }
 
-        User savedUser = userRepository.save(userMapper.makeACardUser(cardUserDTO));
+        User savedUser = userRepository.save(userMapper.makeAUser(userDTO));
 
-        Set<Role> roles = roleRepository.findAllById(cardUserDTO.getRoleIds());
-        savedUser.setRole(roles);
+        SignupRequest signupRequest = new SignupRequest();
+        signupRequest.setUsername(userDTO.getFirstName()+userDTO.getMiddleName()+userDTO.getSecondName());
+        signupRequest.setPassword(userDTO.getPassword());
+        signupRequest.setEmail(userDTO.getEmail());
+        signupRequest.setRole(userDTO.getRole());
 
-        return userMapper.makeACardUserDTO(savedUser);
+        authService.registerUser(signupRequest);
+
+        return userMapper.makeAUserDTO(savedUser);
     }
 
     @Transactional
-    public void deleteUserCard(Long id) {
+    public void deleteCard(Long id) {
         userRepository.deleteById(id);
     }
 
     @Transactional
-    public CardUserDTO editUserCard(CardUserDTO cardUserDTO) {
-        User user = userMapper.makeACardUser(cardUserDTO);
+    public UserDTO editCard(UserDTO userDTO) {
+        User user = userMapper.makeAUser(userDTO);
         userRepository.save(user);
-        return cardUserDTO;
+        return userDTO;
     }
 }

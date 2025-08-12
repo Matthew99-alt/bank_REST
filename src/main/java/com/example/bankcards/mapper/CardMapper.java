@@ -2,7 +2,7 @@ package com.example.bankcards.mapper;
 
 import com.example.bankcards.dto.CardDTO;
 import com.example.bankcards.entity.Card;
-import com.example.bankcards.repository.CardUserRepository;
+import com.example.bankcards.repository.UsersRepository;
 import com.example.bankcards.util.Status;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CardMapper {
 
-    private final CardUserRepository cardUserRepository;
+    private final UsersRepository UsersRepository;
 
     public Card makeACard(CardDTO cardDTO) {
         Card card = new Card();
@@ -31,7 +31,7 @@ public class CardMapper {
             }
         }
         card.setFinalDate(cardDTO.getFinalDate());
-        card.setUser(cardUserRepository.getReferenceById(cardDTO.getUserId()));
+        card.setUser(UsersRepository.getReferenceById(cardDTO.getUserId()));
 
         return card;
     }

@@ -1,12 +1,8 @@
 package com.example.bankcards.dto;
 
-import com.example.bankcards.entity.Card;
-import jakarta.persistence.Column;
-import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -15,7 +11,7 @@ import java.util.Set;
 
 @Getter
 @Setter
-public class CardUserDTO {
+public class UserDTO {
 
     private Long id;
 
@@ -31,5 +27,5 @@ public class CardUserDTO {
 
     private String phoneNumber;
 
-    private Set<Long> roleIds;
+    private Set<String> role;
 }

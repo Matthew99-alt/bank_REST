@@ -1,10 +1,8 @@
 package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.CardDTO;
-import com.example.bankcards.dto.CardUserDTO;
 import com.example.bankcards.dto.TransactionDTO;
 import com.example.bankcards.service.CardService;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

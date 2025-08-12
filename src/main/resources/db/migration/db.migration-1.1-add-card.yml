@@ -73,18 +73,18 @@ databaseChangeLog:
                   type: bigint
                   constraints:
                     nullable: true
-                    foreignKeyName: fk_card_user
-                    references: card_user(id)
+                    foreignKeyName: fk_users
+                    references: users(id)
 
   - changeSet:
       id: 3
       author: matthew
       changes:
         - addUniqueConstraint:
-            tableName: card_user
+            tableName: users
             columnNames: email
-            constraintName: uk_card_user_email
+            constraintName: uk_users_email
         - addUniqueConstraint:
-            tableName: card_user
+            tableName: users
             columnNames: phone_number
-            constraintName: uk_card_user_phone_number
+            constraintName: uk_users_phone_number

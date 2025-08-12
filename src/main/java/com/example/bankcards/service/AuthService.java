@@ -6,8 +6,8 @@ import com.example.bankcards.dto.MessageResponse;
 import com.example.bankcards.dto.SignupRequest;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.Role;
+import com.example.bankcards.repository.UsersRepository;
 import com.example.bankcards.util.RoleEnum;
-import com.example.bankcards.repository.CardUserRepository;
 import com.example.bankcards.repository.RoleRepository;
 import com.example.bankcards.util.JwtUtils;
 import jakarta.persistence.EntityNotFoundException;
@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 public class AuthService {
 
     private final AuthenticationManager authenticationManager;
-    private final CardUserRepository userRepository;
+    private final UsersRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder encoder;
     private final JwtUtils jwtUtils;
@@ -59,9 +59,6 @@ public class AuthService {
 
 
     public MessageResponse registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            throw new RuntimeException("Error: Email is already in use!");
-        }
 
         // Create new user's account
         User user = userRepository.findByEmail(signUpRequest.getEmail()).orElseThrow(() -> new EntityNotFoundException("Указанный пользователь не найден"));

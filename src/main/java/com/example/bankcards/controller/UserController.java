@@ -1,6 +1,6 @@
 package com.example.bankcards.controller;
 
-import com.example.bankcards.dto.CardUserDTO;
+import com.example.bankcards.dto.UserDTO;
 import com.example.bankcards.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -22,28 +22,28 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/all")
-    public List<CardUserDTO> getAllCardsUsers() {
-        return userService.findAllCardUsers();
+    public List<UserDTO> getAllCardsUsers() {
+        return userService.findAllUsers();
     }
 
     @GetMapping("/")
-    public CardUserDTO getACardUser(@RequestParam("id") Long id) {
-        return userService.findCardUserById(id);
+    public UserDTO getACardUser(@RequestParam("id") Long id) {
+        return userService.findUserById(id);
     }
 
     @Operation(method = "POST")  // Явно указываем метод для Swagger
     @PostMapping("/save")
-    public CardUserDTO saveACardUser(@RequestBody @Valid CardUserDTO cardUserDTO) {
-        return userService.saveCardUser(cardUserDTO);
+    public UserDTO saveACardUser(@RequestBody @Valid UserDTO userDTO) {
+        return userService.saveUser(userDTO);
     }
 
     @DeleteMapping("/delete")
     public void deleteACardUser(@RequestParam("id") Long id) {
-        userService.deleteUserCard(id);
+        userService.deleteCard(id);
     }
 
     @PutMapping("/edit")
-    public CardUserDTO editACardUser(@RequestBody @Valid CardUserDTO cardUserDTO) {
-        return userService.editUserCard(cardUserDTO);
+    public UserDTO editACardUser(@RequestBody @Valid UserDTO userDTO) {
+        return userService.editCard(userDTO);
     }
 }

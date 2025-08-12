@@ -17,7 +17,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "users") // todo: поправить миграцию и имя таблицы
+@Table(name = "users")
 public class User {
 
     @Id
