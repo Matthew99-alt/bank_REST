@@ -13,7 +13,7 @@ import java.util.Set;
 
 /**
  * Маппер, отдельный класс для выполнения операций по переводу сущности пользователя в DTO и наоборот
-*/
+ */
 
 @Component
 @RequiredArgsConstructor
@@ -44,6 +44,7 @@ public class UserMapper {
 
         return user;
     }
+
     public UserDTO makeAUserDTO(User user) {
         UserDTO userDTO = new UserDTO();
 
@@ -54,11 +55,12 @@ public class UserMapper {
         userDTO.setEmail(user.getEmail());
         userDTO.setPassword(user.getPassword());
         userDTO.setPhoneNumber(user.getPhoneNumber());
+        //TODO: нужно перебрать роли у user, из каждой достать ее имя строкой, результат перебора и будет Set для DTO
         Set<String> role = new HashSet<>();
         //КОСТЫЫЫЫЫЫЛЬ!!! МОЙ ЛЮБИМЫЫЫЫЫЙ!!!
-        if(user.getRole().contains(new Role(2L,RoleEnum.ROLE_ADMIN))){
+        if (user.getRole().contains(new Role(2L, RoleEnum.ROLE_ADMIN))) {
             role.add("ROLE_ADMIN");
-        }else {
+        } else {
             role.add("ROLE_USER");
         }
         userDTO.setRole(role);

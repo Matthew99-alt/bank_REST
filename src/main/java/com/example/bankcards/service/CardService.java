@@ -3,7 +3,6 @@ package com.example.bankcards.service;
 import com.example.bankcards.dto.CardDTO;
 import com.example.bankcards.dto.TransactionDTO;
 import com.example.bankcards.entity.Card;
-import com.example.bankcards.exception.CustomEntityNotFoundException;
 import com.example.bankcards.exception.DifferentIdentifierException;
 import com.example.bankcards.exception.NegativeBalanceException;
 import com.example.bankcards.exception.SameCardException;
@@ -11,6 +10,7 @@ import com.example.bankcards.exception.UnactiveCardException;
 import com.example.bankcards.mapper.CardMapper;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.util.Status;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -47,7 +47,7 @@ public class CardService {
     @Transactional(readOnly = true)
     public CardDTO findCardById(Long encodedId) {
         Card card = cardRepository.findById(encodedId)
-                .orElseThrow(() -> new CustomEntityNotFoundException("Указанная карта не найдена"));
+                .orElseThrow(() -> new EntityNotFoundException("Указанная карта не найдена"));
         return cardMapper.makeACardDTO(card);
     }
 
@@ -79,14 +79,14 @@ public class CardService {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public TransactionDTO internalCardTransfer(TransactionDTO transactionDTO) {
 
-        Card getFromCard = cardRepository.getReferenceById(transactionDTO.getFromCardId());
-        Card getToCard = cardRepository.getReferenceById(transactionDTO.getToCardId());
+        Card getFromCard = cardRepository.getReferenceById(transactionDTO.fromCardId());
+        Card getToCard = cardRepository.getReferenceById(transactionDTO.toCardId());
 
         if (!Objects.equals(getToCard.getUser().getId(), getFromCard.getUser().getId())) {
             throw new DifferentIdentifierException("Id of users of cards are different");
         }
 
-        if (transactionDTO.getAmount() < 0) {
+        if (transactionDTO.amount() < 0) {
             throw new NegativeBalanceException("Amount should be more than zero");
         }
 
@@ -98,8 +98,8 @@ public class CardService {
             throw new SameCardException("The cards for transaction are the same");
         }
 
-        getFromCard.setBalance(getFromCard.getBalance() - transactionDTO.getAmount());
-        getToCard.setBalance(getToCard.getBalance() + transactionDTO.getAmount());
+        getFromCard.setBalance(getFromCard.getBalance() - transactionDTO.amount());
+        getToCard.setBalance(getToCard.getBalance() + transactionDTO.amount());
 
         return transactionDTO;
     } // todo: имя метода не отражает суть

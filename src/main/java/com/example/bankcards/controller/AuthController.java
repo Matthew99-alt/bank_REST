@@ -20,7 +20,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/signin")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.CREATED) // TODO: не тут, методом ниже
     public JwtResponse authenticateUser(@RequestBody LoginRequest loginRequest) {
         return authService.authenticateUser(loginRequest);
     }

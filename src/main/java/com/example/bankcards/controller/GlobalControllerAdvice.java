@@ -1,9 +1,9 @@
 package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.ErrorDTO;
-import com.example.bankcards.exception.CustomEntityNotFoundException;
 import com.example.bankcards.exception.DifferentIdentifierException;
 import com.example.bankcards.exception.UnuniqueParameterException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -22,9 +22,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class GlobalControllerAdvice {
 
-    @ExceptionHandler(CustomEntityNotFoundException.class)
+    @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorDTO handleCustomEntityNotFoundException(CustomEntityNotFoundException ex) {
+    public ErrorDTO handleEntityNotFoundException(EntityNotFoundException ex) {
         ErrorDTO errorDTO = new ErrorDTO();
         errorDTO.setMessage(ex.getMessage());
         errorDTO.setNumber(HttpStatus.NOT_FOUND.value());
@@ -43,32 +43,10 @@ public class GlobalControllerAdvice {
         return errors;
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler({RuntimeException.class,
+            DifferentIdentifierException.class,
+            UnuniqueParameterException.class})
     public ErrorDTO handleRuntimeException(RuntimeException ex) {
-        ErrorDTO errorDTO = new ErrorDTO();
-        errorDTO.setMessage(ex.getMessage());
-        errorDTO.setNumber(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        errorDTO.setDescription(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-
-        return errorDTO;
-    }
-
-
-    @ExceptionHandler(DifferentIdentifierException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorDTO handleDefaultHandlerExceptionResolver(RuntimeException ex) {
-        ErrorDTO errorDTO = new ErrorDTO();
-        errorDTO.setMessage(ex.getMessage());
-        errorDTO.setNumber(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        errorDTO.setDescription(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-
-        return errorDTO;
-    }
-
-    @ExceptionHandler(UnuniqueParameterException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorDTO handleUnuniqueParameter(RuntimeException ex) {
         ErrorDTO errorDTO = new ErrorDTO();
         errorDTO.setMessage(ex.getMessage());
         errorDTO.setNumber(HttpStatus.INTERNAL_SERVER_ERROR.value());

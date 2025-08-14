@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 public class AuthService {
 
     private final AuthenticationManager authenticationManager;
-    private final UsersRepository userRepository;
+    private final UsersRepository userRepository; // TODO: обращайся в UserService
     private final RoleRepository roleRepository;
     private final PasswordEncoder encoder;
     private final JwtUtils jwtUtils;
@@ -61,7 +61,8 @@ public class AuthService {
     public MessageResponse registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
 
         // Create new user's account
-        User user = userRepository.findByEmail(signUpRequest.getEmail()).orElseThrow(() -> new EntityNotFoundException("Указанный пользователь не найден"));
+        User user = userRepository.findByEmail(signUpRequest.getEmail())
+                .orElseThrow(() -> new EntityNotFoundException("Указанный пользователь не найден"));
 
         Set<String> strRoles = signUpRequest.getRole();
         Set<Role> roles = new HashSet<>();
@@ -72,6 +73,7 @@ public class AuthService {
             roles.add(userRole);
         } else {
             strRoles.forEach(role -> {
+                        //TODO: почему множественные запросы в базу??
                         Role adminRole = roleRepository.findByName(RoleEnum.ROLE_ADMIN)
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                         roles.add(adminRole);

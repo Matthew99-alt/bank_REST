@@ -4,7 +4,7 @@ import com.example.bankcards.dto.TransactionDTO;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.repository.CardRepository;
-import com.example.bankcards.repository.CardUserRepository;
+import com.example.bankcards.repository.UsersRepository;
 import com.example.bankcards.util.Status;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Assertions;
@@ -18,7 +18,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -33,7 +36,7 @@ public class CardControllerTest {
     private CardRepository cardRepository;
 
     @Autowired
-    private CardUserRepository cardUserRepository;
+    private UsersRepository cardUserRepository;
 
     @BeforeEach
     void setUp() {
@@ -174,7 +177,7 @@ public class CardControllerTest {
                 "    \"finalDate\": \"2025-11-11\",\n" +
                 "    \"status\": \"ACTIVE\",\n" +
                 "    \"balance\": 100000,\n" +
-                "    \"userId\": " + savedCard.getUser().getId() +  "\n" +
+                "    \"userId\": " + savedCard.getUser().getId() + "\n" +
                 "}";
 
         mockMvc.perform(
@@ -193,8 +196,8 @@ public class CardControllerTest {
         TransactionDTO transactionDTO = makeATransactionDTOForTests();
 
         String requestBody = "{\n" +
-                "    \"fromCardId\":"+ transactionDTO.getToCardId() +",\n" +
-                "    \"toCardId\": "+ transactionDTO.getFromCardId() +",\n" +
+                "    \"fromCardId\":" + transactionDTO.toCardId() + ",\n" +
+                "    \"toCardId\": " + transactionDTO.fromCardId() + ",\n" +
                 "    \"amount\": 1000\n" +
                 "}";
 
@@ -214,8 +217,8 @@ public class CardControllerTest {
         TransactionDTO transactionDTO = makeATransactionDTOForTests();
 
         String requestBody = "{\n" +
-                "    \"fromCardId\":"+ transactionDTO.getToCardId() +",\n" +
-                "    \"toCardId\": "+ transactionDTO.getToCardId() +",\n" +
+                "    \"fromCardId\":" + transactionDTO.toCardId() + ",\n" +
+                "    \"toCardId\": " + transactionDTO.toCardId() + ",\n" +
                 "    \"amount\": 1000\n" +
                 "}";
 
@@ -252,8 +255,8 @@ public class CardControllerTest {
         card = cardRepository.save(card);
 
         String requestBody = "{\n" +
-                "    \"fromCardId\":"+ card.getId() +",\n" +
-                "    \"toCardId\": "+ transactionDTO.getFromCardId() +",\n" +
+                "    \"fromCardId\":" + card.getId() + ",\n" +
+                "    \"toCardId\": " + transactionDTO.fromCardId() + ",\n" +
                 "    \"amount\": 1000\n" +
                 "}";
 
@@ -273,8 +276,8 @@ public class CardControllerTest {
         TransactionDTO transactionDTO = makeATransactionDTOForTests();
 
         String requestBody = "{\n" +
-                "    \"fromCardId\":"+ transactionDTO.getToCardId() +",\n" +
-                "    \"toCardId\": "+ transactionDTO.getFromCardId() +",\n" +
+                "    \"fromCardId\":" + transactionDTO.toCardId() + ",\n" +
+                "    \"toCardId\": " + transactionDTO.fromCardId() + ",\n" +
                 "    \"amount\": -1000\n" +
                 "}";
 
@@ -293,15 +296,15 @@ public class CardControllerTest {
 
         TransactionDTO transactionDTO = makeATransactionDTOForTests();
 
-        Card card = cardRepository.getReferenceById(transactionDTO.getToCardId());
+        Card card = cardRepository.getReferenceById(transactionDTO.toCardId());
 
         card.setStatus(Status.BLOCKED);
 
         card = cardRepository.save(card);
 
         String requestBody = "{\n" +
-                "    \"fromCardId\":"+ card.getId() +",\n" +
-                "    \"toCardId\": "+ transactionDTO.getFromCardId() +",\n" +
+                "    \"fromCardId\":" + card.getId() + ",\n" +
+                "    \"toCardId\": " + transactionDTO.fromCardId() + ",\n" +
                 "    \"amount\": 1000\n" +
                 "}";
 
@@ -326,6 +329,7 @@ public class CardControllerTest {
 
         return cardRepository.save(card);
     }
+
     private User makeACardUserForTests() {
         User user = new User();
         user.setPhoneNumber("+79540012325");
@@ -337,8 +341,8 @@ public class CardControllerTest {
         return cardUserRepository.save(user);
     }
 
-    private TransactionDTO makeATransactionDTOForTests(){
-        TransactionDTO transactionDTO = new TransactionDTO();
+    private TransactionDTO makeATransactionDTOForTests() {
+
         Card card1 = makeACardForTests();
         Card card = new Card();
         card.setStatus(Status.ACTIVE);
@@ -347,10 +351,6 @@ public class CardControllerTest {
         card.setFinalDate(LocalDate.parse("2025-12-31"));
         cardRepository.save(card);
 
-        transactionDTO.setToCardId(card.getId());
-        transactionDTO.setFromCardId(card1.getId());
-        transactionDTO.setAmount(100000L);
-
-        return transactionDTO;
+        return new TransactionDTO(card.getId(), card1.getId(), 100000L);
     }
 }
