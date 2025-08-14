@@ -40,7 +40,7 @@ public class AuthService {
     public JwtResponse authenticateUser(LoginRequest loginRequest) {
 
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
@@ -80,6 +80,7 @@ public class AuthService {
         }
 
         user.setRole(roles);
+        user.setPassword(encoder.encode(signUpRequest.getPassword()));
         userRepository.save(user);
 
         return new MessageResponse("User registered successfully!");

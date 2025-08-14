@@ -34,7 +34,6 @@ public class UserService {
 
     private final AuthService authService;
 
-
     @Transactional(readOnly = true)
     public List<UserDTO> findAllUsers() {
         return userRepository.findAll()

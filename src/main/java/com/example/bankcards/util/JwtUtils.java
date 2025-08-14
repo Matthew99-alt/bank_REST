@@ -1,6 +1,7 @@
 package com.example.bankcards.util;
 
 import com.example.bankcards.entity.User;
+import com.example.bankcards.service.UserDetailsImpl;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -24,10 +25,10 @@ public class JwtUtils {
 
     public String generateJwtToken(Authentication authentication) {
 
-        User user = (User) authentication.getPrincipal(); // то что имлементит UserDetails а не твоя сущность
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
         return Jwts.builder()
-                .setSubject(user.getEmail()) // стандартное поле - обычно это username/email
+                .setSubject(userDetails.getEmail()) // стандартное поле - обычно это username/email
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key(), SignatureAlgorithm.HS256)

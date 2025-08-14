@@ -1,6 +1,6 @@
 package com.example.bankcards.util;
 
-import com.example.bankcards.service.CardUserDetailsService;
+import com.example.bankcards.service.UserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +20,7 @@ import java.io.IOException;
 @Slf4j
 public class AuthTokenFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
-    private final CardUserDetailsService cardUserService;
+    private final UserDetailsService cardUserService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

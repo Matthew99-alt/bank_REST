@@ -1,7 +1,7 @@
 package com.example.bankcards.config;
 
 
-import com.example.bankcards.service.CardUserDetailsService;
+import com.example.bankcards.service.UserDetailsService;
 import com.example.bankcards.util.AuthEntryPointJwt;
 import com.example.bankcards.util.AuthTokenFilter;
 import com.example.bankcards.util.JwtUtils;
@@ -24,7 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
-    private final CardUserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
     private final JwtUtils jwtUtils;
     private final AuthEntryPointJwt unauthorizedHandler;
 
