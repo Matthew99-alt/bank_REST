@@ -1,5 +1,6 @@
 package com.example.bankcards.dto;
 
+import com.example.bankcards.entity.Role;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,5 +28,5 @@ public class UserDTO {
 
     private String phoneNumber;
 
-    private Set<String> role;
+    private Set<Role> role;
 }

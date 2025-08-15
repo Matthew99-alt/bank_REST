@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Маппер, отдельный класс для выполнения операций по переводу сущности пользователя в DTO и наоборот
@@ -34,8 +35,9 @@ public class UserMapper {
         // Конвертируем Set<String> в Set<Role>
         Set<Role> roles = new HashSet<>();
         if (userDTO.getRole() != null) {
-            for (String roleName : userDTO.getRole()) {
-                Role role = roleRepository.findByName(RoleEnum.valueOf(roleName))
+            for (Role currentRole : userDTO.getRole()) {
+                RoleEnum roleName = currentRole.getName();
+                Role role = roleRepository.findByName(roleName)
                         .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
                 roles.add(role);
             }
@@ -55,15 +57,7 @@ public class UserMapper {
         userDTO.setEmail(user.getEmail());
         userDTO.setPassword(user.getPassword());
         userDTO.setPhoneNumber(user.getPhoneNumber());
-        //TODO: нужно перебрать роли у user, из каждой достать ее имя строкой, результат перебора и будет Set для DTO
-        Set<String> role = new HashSet<>();
-        //КОСТЫЫЫЫЫЫЛЬ!!! МОЙ ЛЮБИМЫЫЫЫЫЙ!!!
-        if (user.getRole().contains(new Role(2L, RoleEnum.ROLE_ADMIN))) {
-            role.add("ROLE_ADMIN");
-        } else {
-            role.add("ROLE_USER");
-        }
-        userDTO.setRole(role);
+        userDTO.setRole(user.getRole());
 
         return userDTO;
     }

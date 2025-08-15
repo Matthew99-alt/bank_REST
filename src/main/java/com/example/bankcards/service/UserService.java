@@ -29,7 +29,6 @@ public class UserService {
 
     private final UsersRepository userRepository;
     private final UserMapper userMapper;
-    private final AuthService authService;
 
     @Transactional(readOnly = true)
     public List<UserDTO> findAllUsers() {
@@ -46,26 +45,19 @@ public class UserService {
         return userMapper.makeAUserDTO(user);
     }
 
+    @Transactional(readOnly = true)
+    public Boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    @Transactional(readOnly = true)
+    public Boolean existsByPhoneNumber(String email) {
+        return userRepository.existsByPhoneNumber(email);
+    }
+
     @Transactional
     public UserDTO saveUser(UserDTO userDTO) {
-
-        if (userRepository.existsByEmail(userDTO.getEmail())
-                || userRepository.existsByPhoneNumber(userDTO.getPhoneNumber())) {
-            throw new UnuniqueParameterException("Email and phone number should be unique");
-        }
-
         User savedUser = userRepository.save(userMapper.makeAUser(userDTO));
-
-        SignupRequest signupRequest = new SignupRequest();
-        signupRequest.setUsername(userDTO.getFirstName() + userDTO.getMiddleName() + userDTO.getSecondName());
-        signupRequest.setPassword(userDTO.getPassword());
-        signupRequest.setEmail(userDTO.getEmail());
-        signupRequest.setRole(userDTO.getRole());
-
-        //TODO: процесс регистрации пользователя, вызывает его сохранение, но не наоборот!
-        // пересмотри что делает один процесс а что другой
-        authService.registerUser(signupRequest);
-
         return userMapper.makeAUserDTO(savedUser);
     }
 
@@ -79,5 +71,9 @@ public class UserService {
         User user = userMapper.makeAUser(userDTO);
         userRepository.save(user);
         return userDTO;
+    }
+
+    public UserDTO findUserByEmail(String email){
+        return userMapper.makeAUserDTO(userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Указанный пользователь не найден")));
     }
 }

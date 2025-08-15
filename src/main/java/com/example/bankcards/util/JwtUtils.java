@@ -27,8 +27,8 @@ public class JwtUtils {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        return Jwts.builder()
-                .setSubject(userDetails.getEmail()) // стандартное поле - обычно это username/email
+        return Jwts.builder().claim("roles", userDetails.getAuthorities())
+                .setSubject(userDetails.getEmail())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key(), SignatureAlgorithm.HS256)

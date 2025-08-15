@@ -1,10 +1,7 @@
 package com.example.bankcards.controller;
 
 
-import com.example.bankcards.dto.JwtResponse;
-import com.example.bankcards.dto.LoginRequest;
-import com.example.bankcards.dto.MessageResponse;
-import com.example.bankcards.dto.SignupRequest;
+import com.example.bankcards.dto.*;
 import com.example.bankcards.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,13 +17,14 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/signin")
-    @ResponseStatus(HttpStatus.CREATED) // TODO: не тут, методом ниже
     public JwtResponse authenticateUser(@RequestBody LoginRequest loginRequest) {
         return authService.authenticateUser(loginRequest);
     }
 
+
     @PostMapping("/signup")
-    public MessageResponse registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        return authService.registerUser(signUpRequest);
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserDTO registerUser(@Valid @RequestBody UserDTO userDTO) {
+        return authService.registerUser(userDTO);
     }
 }

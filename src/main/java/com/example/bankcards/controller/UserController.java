@@ -5,6 +5,7 @@ import com.example.bankcards.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class UserController {
 
     private final UserService userService;
 
+    //@PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/all")
     public List<UserDTO> getAllCardsUsers() {
         return userService.findAllUsers();
@@ -31,17 +33,13 @@ public class UserController {
         return userService.findUserById(id);
     }
 
-    @Operation(method = "POST")  // Явно указываем метод для Swagger
-    @PostMapping("/save")
-    public UserDTO saveACardUser(@RequestBody @Valid UserDTO userDTO) {
-        return userService.saveUser(userDTO);
-    }
-
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/delete")
     public void deleteACardUser(@RequestParam("id") Long id) {
         userService.deleteCard(id);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/edit")
     public UserDTO editACardUser(@RequestBody @Valid UserDTO userDTO) {
         return userService.editCard(userDTO);
