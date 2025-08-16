@@ -1,8 +1,12 @@
 package com.example.bankcards.controller;
 
+import com.example.bankcards.BankRestApplication;
+import com.example.bankcards.configuration.NoSecurityTestConfig;
+import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.repository.CardRepository;
-import com.example.bankcards.repository.CardUserRepository;
+import com.example.bankcards.repository.UsersRepository;
+import com.example.bankcards.util.RoleEnum;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,21 +14,27 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.HashSet;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        classes = {BankRestApplication.class, NoSecurityTestConfig.class})
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class UserTest {
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private CardUserRepository cardUserRepository;
+    private UsersRepository UserRepository;
 
     @Autowired
     private CardRepository cardRepository;
@@ -32,7 +42,7 @@ public class UserTest {
     @BeforeEach
     void setUp() {
         cardRepository.deleteAll();
-        cardUserRepository.deleteAll();
+        UserRepository.deleteAll();
     }
 
     @Test
@@ -53,27 +63,6 @@ public class UserTest {
 
         mockMvc.perform(
                         get("/user/").param("id", user.getId().toString())
-                )
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
-                );
-    }
-
-    @Test
-    @Transactional
-    public void testSaveCardUser() throws Exception {
-
-        String requestBody = "{\n" +
-                "    \"firstName\": \"Иван\",\n" +
-                "    \"secondName\": \"Иванов\",\n" +
-                "    \"middleName\": \"Иванович\",\n" +
-                "    \"email\": \"ivanov123@example.com\",\n" +
-                "    \"phoneNumber\": \"+79391934567\"\n" +
-                "}";
-
-        mockMvc.perform(
-                        post("/user/save").contentType(MediaType.APPLICATION_JSON)
-                                .content(requestBody)
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
@@ -121,11 +110,15 @@ public class UserTest {
     private User makeACardUserForTests() {
         User user = new User();
         user.setPhoneNumber("+79540012325");
-        user.setEmail("helloooooo@gmail.com");
+        user.setEmail("hellothere@gmail.com");
         user.setFirstName("Павел");
         user.setMiddleName("Павлов");
         user.setSecondName("Павлович");
+        user.setPassword("securepassword113");
+        HashSet<Role> roles = new HashSet<>();
+        roles.add(new Role(1L, RoleEnum.ROLE_ADMIN));
+        user.setRole(roles);
 
-        return cardUserRepository.save(user);
+        return UserRepository.save(user);
     }
 }

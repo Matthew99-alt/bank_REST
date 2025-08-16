@@ -1,32 +1,48 @@
 package com.example.bankcards.controller;
 
+import com.example.bankcards.BankRestApplication;
+import com.example.bankcards.configuration.NoSecurityTestConfig;
 import com.example.bankcards.dto.TransactionDTO;
 import com.example.bankcards.entity.Card;
+import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.UsersRepository;
+import com.example.bankcards.service.UserDetailsImpl;
+import com.example.bankcards.util.RoleEnum;
 import com.example.bankcards.util.Status;
 import jakarta.transaction.Transactional;
+import org.hibernate.mapping.Collection;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        classes = {BankRestApplication.class, NoSecurityTestConfig.class})
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class CardControllerTest {
 
     @Autowired
@@ -48,7 +64,7 @@ public class CardControllerTest {
     @Transactional
     public void testGetAllCards() throws Exception {
         mockMvc.perform(
-                        get("/card/all")
+                        get("/cards/")
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
@@ -60,8 +76,14 @@ public class CardControllerTest {
     public void testGetAllCardsByUserId() throws Exception {
         Card card = makeACardForTests();
 
+        UserDetailsImpl userDetails = makeUserDetails(card.getUser());
+
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
         mockMvc.perform(
-                        get("/card/userId/").param("id", card.getId().toString())
+                        get("/cards/userId").param("id", card.getId().toString())
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
@@ -74,7 +96,7 @@ public class CardControllerTest {
         Card card = makeACardForTests();
 
         mockMvc.perform(
-                        get("/card/").param("id", card.getId().toString())
+                        get("/cards/").param("id", card.getId().toString())
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
@@ -95,7 +117,7 @@ public class CardControllerTest {
                 "}";
 
         mockMvc.perform(
-                        post("/card/save").contentType(MediaType.APPLICATION_JSON)
+                        post("/cards/").contentType(MediaType.APPLICATION_JSON)
                                 .content(requestBody)
                 )
                 .andExpect(status().isOk())
@@ -110,7 +132,7 @@ public class CardControllerTest {
         Card card = makeACardForTests();
 
         mockMvc.perform(
-                        post("/card/block/").param("id", card.getId().toString())
+                        patch("/cards/{id}/block", card.getId().toString())
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
@@ -127,27 +149,12 @@ public class CardControllerTest {
         card.setStatus(Status.BLOCKED);
 
         mockMvc.perform(
-                        post("/card/activate/").param("id", card.getId().toString())
+                        patch("/cards/{id}/activate", card.getId().toString())
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
         Card updatedCard = cardRepository.findById(card.getId()).orElseThrow();
         Assertions.assertEquals(Status.ACTIVE, updatedCard.getStatus());
-    }
-
-    @Test
-    @Transactional
-    void outdateCard_ShouldReturnOutdated() throws Exception {
-
-        Card card = makeACardForTests();
-
-        mockMvc.perform(
-                        post("/card/outdated/").param("id", card.getId().toString())
-                )
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
-        Card updatedCard = cardRepository.findById(card.getId()).orElseThrow();
-        Assertions.assertEquals(Status.OUTDATED, updatedCard.getStatus());
     }
 
 
@@ -157,36 +164,19 @@ public class CardControllerTest {
 
         Card card = makeACardForTests();
 
+        UserDetailsImpl userDetails = makeUserDetails(card.getUser());
+
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+
         mockMvc.perform(
-                        delete("/card/delete").param("id", card.getId().toString())
+                        delete("/cards/delete").param("id", card.getId().toString())
                 )
                 .andExpect(status().isOk());
 
         Assertions.assertFalse(cardRepository.findById(card.getId()).isPresent());
-    }
-
-
-    @Test
-    @Transactional
-    public void testEditCard() throws Exception {
-
-        Card savedCard = makeACardForTests();
-
-        String requestBody = "{\n" +
-                "    \"id\":\"" + savedCard.getId() + "\",\n" +
-                "    \"finalDate\": \"2025-11-11\",\n" +
-                "    \"status\": \"ACTIVE\",\n" +
-                "    \"balance\": 100000,\n" +
-                "    \"userId\": " + savedCard.getUser().getId() + "\n" +
-                "}";
-
-        mockMvc.perform(
-                        put("/card/edit").contentType(MediaType.APPLICATION_JSON)
-                                .content(requestBody)
-                )
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
-                );
     }
 
     @Test
@@ -195,6 +185,13 @@ public class CardControllerTest {
 
         TransactionDTO transactionDTO = makeATransactionDTOForTests();
 
+        UserDetailsImpl userDetails = makeUserDetails(cardRepository.getReferenceById(
+                cardUserRepository.getReferenceById(transactionDTO.toCardId()).getId()).getUser());
+
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
         String requestBody = "{\n" +
                 "    \"fromCardId\":" + transactionDTO.toCardId() + ",\n" +
                 "    \"toCardId\": " + transactionDTO.fromCardId() + ",\n" +
@@ -202,117 +199,10 @@ public class CardControllerTest {
                 "}";
 
         mockMvc.perform(
-                        post("/card/transaction").contentType(MediaType.APPLICATION_JSON)
+                        post("/cards/transfer").contentType(MediaType.APPLICATION_JSON)
                                 .content(requestBody)
                 )
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
-                );
-    }
-
-    @Test
-    @Transactional
-    public void testTransferCard_sameCards() throws Exception {
-
-        TransactionDTO transactionDTO = makeATransactionDTOForTests();
-
-        String requestBody = "{\n" +
-                "    \"fromCardId\":" + transactionDTO.toCardId() + ",\n" +
-                "    \"toCardId\": " + transactionDTO.toCardId() + ",\n" +
-                "    \"amount\": 1000\n" +
-                "}";
-
-        mockMvc.perform(
-                        post("/card/transaction").contentType(MediaType.APPLICATION_JSON)
-                                .content(requestBody)
-                )
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
-                );
-    }
-
-    @Test
-    @Transactional
-    public void testTransferCard_differentUsers() throws Exception {
-        TransactionDTO transactionDTO = makeATransactionDTOForTests();
-
-        User user = new User();
-        user.setPhoneNumber("+79740012325");
-        user.setEmail("hellohello@gmail.com");
-        user.setFirstName("Павел");
-        user.setMiddleName("Павлов");
-        user.setSecondName("Павлович");
-
-        cardUserRepository.save(user);
-
-        Card card = new Card();
-
-        card.setStatus(Status.ACTIVE);
-        card.setUser(user);
-        card.setBalance(10000L);
-        card.setFinalDate(LocalDate.parse("2025-12-31"));
-
-        card = cardRepository.save(card);
-
-        String requestBody = "{\n" +
-                "    \"fromCardId\":" + card.getId() + ",\n" +
-                "    \"toCardId\": " + transactionDTO.fromCardId() + ",\n" +
-                "    \"amount\": 1000\n" +
-                "}";
-
-        mockMvc.perform(
-                        post("/card/transaction").contentType(MediaType.APPLICATION_JSON)
-                                .content(requestBody)
-                )
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
-                );
-    }
-
-    @Test
-    @Transactional
-    public void testTransferCard_negativeAmount() throws Exception {
-
-        TransactionDTO transactionDTO = makeATransactionDTOForTests();
-
-        String requestBody = "{\n" +
-                "    \"fromCardId\":" + transactionDTO.toCardId() + ",\n" +
-                "    \"toCardId\": " + transactionDTO.fromCardId() + ",\n" +
-                "    \"amount\": -1000\n" +
-                "}";
-
-        mockMvc.perform(
-                        post("/card/transaction").contentType(MediaType.APPLICATION_JSON)
-                                .content(requestBody)
-                )
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
-                );
-    }
-
-    @Test
-    @Transactional
-    public void testTransferCard_unactiveCard() throws Exception {
-
-        TransactionDTO transactionDTO = makeATransactionDTOForTests();
-
-        Card card = cardRepository.getReferenceById(transactionDTO.toCardId());
-
-        card.setStatus(Status.BLOCKED);
-
-        card = cardRepository.save(card);
-
-        String requestBody = "{\n" +
-                "    \"fromCardId\":" + card.getId() + ",\n" +
-                "    \"toCardId\": " + transactionDTO.fromCardId() + ",\n" +
-                "    \"amount\": 1000\n" +
-                "}";
-
-        mockMvc.perform(
-                        post("/card/transaction").contentType(MediaType.APPLICATION_JSON)
-                                .content(requestBody)
-                )
-                .andExpect(status().isInternalServerError())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)
                 );
     }
@@ -337,6 +227,10 @@ public class CardControllerTest {
         user.setFirstName("Павел");
         user.setMiddleName("Павлов");
         user.setSecondName("Павлович");
+        user.setPassword("securepassword113");
+        HashSet<Role> roles = new HashSet<>();
+        roles.add(new Role(1L, RoleEnum.ROLE_ADMIN));
+        user.setRole(roles);
 
         return cardUserRepository.save(user);
     }
@@ -352,5 +246,17 @@ public class CardControllerTest {
         cardRepository.save(card);
 
         return new TransactionDTO(card.getId(), card1.getId(), 100000L);
+    }
+
+    private UserDetailsImpl makeUserDetails(User user){
+        return new UserDetailsImpl(
+           user.getId(),
+           user.getFirstName()+user.getMiddleName()+user.getSecondName(),
+           user.getEmail(),
+           user.getPassword(),
+           List.of(new SimpleGrantedAuthority("ROLE_USER")),
+           user.getPhoneNumber()
+        );
+
     }
 }

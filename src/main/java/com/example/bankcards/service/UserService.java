@@ -1,9 +1,8 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.dto.SignupRequest;
 import com.example.bankcards.dto.UserDTO;
 import com.example.bankcards.entity.User;
-import com.example.bankcards.exception.UnuniqueParameterException;
+import com.example.bankcards.exception.DifferentIdentifierException;
 import com.example.bankcards.mapper.UserMapper;
 import com.example.bankcards.repository.UsersRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -39,8 +38,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserDTO findUserById(Long encodedId) {
-        User user = userRepository.findById(encodedId)
+    public UserDTO findUserById(Long id) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Указанный пользователь не найден"));
         return userMapper.makeAUserDTO(user);
     }
@@ -71,9 +70,5 @@ public class UserService {
         User user = userMapper.makeAUser(userDTO);
         userRepository.save(user);
         return userDTO;
-    }
-
-    public UserDTO findUserByEmail(String email){
-        return userMapper.makeAUserDTO(userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Указанный пользователь не найден")));
     }
 }

@@ -3,10 +3,12 @@ package com.example.bankcards.controller;
 import com.example.bankcards.dto.CardDTO;
 import com.example.bankcards.dto.TransactionDTO;
 import com.example.bankcards.service.CardService;
+import com.example.bankcards.service.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,9 +37,10 @@ public class CardController {
         return cardService.findCardById(id);
     }
 
+    //С помощью этой операции пользователь узнаёт свой баланс и просматривает свою карту т.к. баланс - часть сущности Card
     @GetMapping("/userId")
-    public List<CardDTO> getCardsByUserId(@RequestParam("id") Long id) {
-        return cardService.findByUserId(id);
+    public List<CardDTO> getCardsByUserId(@RequestParam("id") Long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return cardService.findByUserId(id, userDetails);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -60,13 +63,12 @@ public class CardController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/delete") //указано в ТЗ, админ должен уметь активировать, блокировать, создавать и удалять карты
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteACard(@RequestParam("id") Long id) {
         cardService.deleteCard(id);
     }
 
     @PostMapping("/transfer")
-    public TransactionDTO internalCardTransfer(@RequestBody TransactionDTO transactionDTO){
-        return cardService.internalCardTransfer(transactionDTO);
+    public TransactionDTO transfer(@RequestBody TransactionDTO transactionDTO, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        return cardService.transfer(transactionDTO, userDetails);
     }
 }

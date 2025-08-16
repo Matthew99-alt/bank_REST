@@ -55,7 +55,7 @@ public class CardService {
     public CardDTO saveCard(CardDTO cardDTO) {
 
         if (cardDTO.getBalance() < 0) {
-            throw new NegativeBalanceException("Balance should be more than zero");
+            throw new NegativeBalanceException("Недостаточно средств");
         }
 
         Card savedCard = cardRepository.save(cardMapper.makeACard(cardDTO));
@@ -77,7 +77,14 @@ public class CardService {
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public TransactionDTO internalCardTransfer(TransactionDTO transactionDTO) {
+    public TransactionDTO transfer(TransactionDTO transactionDTO, UserDetailsImpl userDetails) {
+
+        if (!cardRepository.getReferenceById(transactionDTO.fromCardId()).getUser().getId().equals(userDetails.getId())){
+            throw new DifferentIdentifierException("Введен не верный идентификатор");
+        }
+        if (!cardRepository.getReferenceById(transactionDTO.toCardId()).getUser().getId().equals(userDetails.getId())){
+            throw new DifferentIdentifierException("Введен не верный идентификатор");
+        }
 
         Card getFromCard = cardRepository.getReferenceById(transactionDTO.fromCardId());
         Card getToCard = cardRepository.getReferenceById(transactionDTO.toCardId());
@@ -102,10 +109,15 @@ public class CardService {
         getToCard.setBalance(getToCard.getBalance() + transactionDTO.amount());
 
         return transactionDTO;
-    } // todo: имя метода не отражает суть
+    }
 
     @Transactional(readOnly = true)
-    public List<CardDTO> findByUserId(Long userId) {
+    public List<CardDTO> findByUserId(Long userId, UserDetailsImpl userDetails) {
+
+        if(!userDetails.getId().equals(userId)){
+            throw new DifferentIdentifierException("Идентификатор пользователя и владельца карты разные. В доступе отказано");
+        }
+
         return cardRepository.findAll()
                 .stream()
                 .filter(card -> card.getUser().getId().equals(userId))
@@ -116,12 +128,5 @@ public class CardService {
     @Transactional
     public void deleteCard(Long id) {
         cardRepository.deleteById(id);
-    }
-
-    @Transactional
-    public CardDTO editCard(CardDTO cardDTO) {
-        Card card = cardMapper.makeACard(cardDTO);
-        cardRepository.save(card);
-        return cardDTO;
     }
 }
