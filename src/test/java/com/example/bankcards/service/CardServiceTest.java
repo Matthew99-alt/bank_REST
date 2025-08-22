@@ -8,32 +8,26 @@ import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.UsersRepository;
 import com.example.bankcards.util.RoleEnum;
 import com.example.bankcards.util.Status;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
 class CardServiceTest {
 
     @Mock
@@ -91,7 +85,7 @@ class CardServiceTest {
     }
 
 
-    private User makeAUser(){
+    private User makeAUser() {
         User user = new User();
         user.setId(1L);
         user.setPhoneNumber("+79540012325");
@@ -107,7 +101,7 @@ class CardServiceTest {
         return user;
     }
 
-    private Card makeACard(User user){
+    private Card makeACard(User user) {
 
         Card card = new Card();
         card.setId(1L);
@@ -118,10 +112,11 @@ class CardServiceTest {
 
         return card;
     }
-    private UserDetailsImpl makeUserDetails(User user){
+
+    private UserDetailsImpl makeUserDetails(User user) {
         return new UserDetailsImpl(
                 user.getId(),
-                user.getFirstName()+user.getMiddleName()+user.getSecondName(),
+                user.getFirstName() + user.getMiddleName() + user.getSecondName(),
                 user.getEmail(),
                 user.getPassword(),
                 List.of(new SimpleGrantedAuthority("ROLE_USER")),
