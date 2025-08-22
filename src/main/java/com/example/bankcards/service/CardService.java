@@ -51,6 +51,20 @@ public class CardService {
         return cardMapper.makeACardDTO(card);
     }
 
+    @Transactional(readOnly = true)
+    public List<CardDTO> findByUserId(Long userId, UserDetailsImpl userDetails) {
+
+        if(!userDetails.getId().equals(userId)){
+            throw new DifferentIdentifierException("Идентификатор пользователя и владельца карты разные. В доступе отказано");
+        }
+
+        return cardRepository.findAll()
+                .stream()
+                .filter(card -> card.getUser().getId().equals(userId))
+                .map(cardMapper::makeACardDTO)
+                .toList();
+    }
+
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public CardDTO saveCard(CardDTO cardDTO) {
 
@@ -109,20 +123,6 @@ public class CardService {
         getToCard.setBalance(getToCard.getBalance() + transactionDTO.amount());
 
         return transactionDTO;
-    }
-
-    @Transactional(readOnly = true)
-    public List<CardDTO> findByUserId(Long userId, UserDetailsImpl userDetails) {
-
-        if(!userDetails.getId().equals(userId)){
-            throw new DifferentIdentifierException("Идентификатор пользователя и владельца карты разные. В доступе отказано");
-        }
-
-        return cardRepository.findAll()
-                .stream()
-                .filter(card -> card.getUser().getId().equals(userId))
-                .map(cardMapper::makeACardDTO)
-                .toList();
     }
 
     @Transactional

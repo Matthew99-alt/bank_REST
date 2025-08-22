@@ -4,6 +4,15 @@ import com.example.bankcards.dto.CardDTO;
 import com.example.bankcards.dto.TransactionDTO;
 import com.example.bankcards.service.CardService;
 import com.example.bankcards.service.UserDetailsImpl;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,62 +22,141 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Контроллер для запросов связанных с катрами
-*/
-
 @RestController
 @RequestMapping("/cards")
-@CrossOrigin(origins = "http://localhost:8080")
 @RequiredArgsConstructor
+@Tag(name = "Карты", description = "API для управления банковскими картами")
+@SecurityRequirement(name = "bearerAuth") // Указываем, что нужен JWT токен
 public class CardController {
 
     private final CardService cardService;
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/")
+    @Operation(summary = "Получить все карты", description = "Получение списка всех карт (только для администраторов)")
+    @ApiResponse(responseCode = "200", description = "Список карт получен")
     public List<CardDTO> getAllCards() {
         return cardService.findAllCards();
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/{id}")
-    public CardDTO getACard(@PathVariable("id") Long id) {
+    @Operation(summary = "Получить карту по ID", description = "Получение информации о конкретной карте по её идентификатору")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Карта найдена"),
+            @ApiResponse(responseCode = "404", description = "Карта не найдена", content = @Content)
+    })
+    public CardDTO getACard(
+            @Parameter(description = "ID карты", example = "1", required = true)
+            @PathVariable("id") Long id) {
         return cardService.findCardById(id);
     }
 
-    //С помощью этой операции пользователь узнаёт свой баланс и просматривает свою карту т.к. баланс - часть сущности Card
     @GetMapping("/userId")
-    public List<CardDTO> getCardsByUserId(@RequestParam("id") Long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    @Operation(summary = "Получить карты пользователя", description = "Получение списка карт конкретного пользователя")
+    @ApiResponse(responseCode = "200", description = "Список карт получен")
+    public List<CardDTO> getCardsByUserId(
+            @Parameter(description = "ID пользователя", example = "123", required = true)
+            @RequestParam("id") Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return cardService.findByUserId(id, userDetails);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/")
-    public CardDTO saveACard(@RequestBody @Valid CardDTO cardDTO) {
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Создать новую карту", description = "Создание новой банковской карты (только для администраторов)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Карта успешно создана"),
+            @ApiResponse(responseCode = "400", description = "Невалидные данные", content = @Content)
+    })
+    public CardDTO saveACard(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Данные для создания карты",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = """
+                        {
+                          "finalDate": "2025-12-31",
+                          "status": "ACTIVE",
+                          "balance": 100000,
+                          "userId": 123
+                        }
+                        """
+                            )
+                    )
+            )
+            @RequestBody @Valid CardDTO cardDTO) {
         return cardService.saveCard(cardDTO);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/{id}/block")
-    public CardDTO blockCard(@PathVariable("id") Long cardId) {
+    @Operation(summary = "Заблокировать карту", description = "Блокировка карты по идентификатору (только для администраторов)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Карта заблокирована"),
+            @ApiResponse(responseCode = "404", description = "Карта не найдена", content = @Content)
+    })
+    public CardDTO blockCard(
+            @Parameter(description = "ID карты", example = "1", required = true)
+            @PathVariable("id") Long cardId) {
         return cardService.blockCard(cardId);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PatchMapping("/{id}/activate")
-    public CardDTO activateCard(@PathVariable("id") Long cardId) {
+    @Operation(summary = "Активировать карту", description = "Активация заблокированной карты (только для администраторов)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Карта активирована"),
+            @ApiResponse(responseCode = "404", description = "Карта не найдена", content = @Content)
+    })
+    public CardDTO activateCard(
+            @Parameter(description = "ID карты", example = "1", required = true)
+            @PathVariable("id") Long cardId) {
         return cardService.activateCard(cardId);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @DeleteMapping("/delete") //указано в ТЗ, админ должен уметь активировать, блокировать, создавать и удалять карты
-    public void deleteACard(@RequestParam("id") Long id) {
+    @DeleteMapping("/delete")
+    @Operation(summary = "Удалить карту", description = "Удаление карты по идентификатору (только для администраторов)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Карта удалена"),
+            @ApiResponse(responseCode = "404", description = "Карта не найдена", content = @Content)
+    })
+    public void deleteACard(
+            @Parameter(description = "ID карты", example = "1", required = true)
+            @RequestParam("id") Long id) {
         cardService.deleteCard(id);
     }
 
     @PostMapping("/transfer")
-    public TransactionDTO transfer(@RequestBody TransactionDTO transactionDTO, @AuthenticationPrincipal UserDetailsImpl userDetails){
+    @Operation(summary = "Перевод средств", description = "Перевод денежных средств между картами")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Перевод выполнен успешно"),
+            @ApiResponse(responseCode = "400", description = "Ошибка перевода (недостаточно средств и т.д.)", content = @Content)
+    })
+    public TransactionDTO transfer(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Данные для перевода",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = """
+                        {
+                          "fromCardId": 1,
+                          "toCardId": 2,
+                          "amount": 5000,
+                          "description": "Перевод за услуги"
+                        }
+                        """
+                            )
+                    )
+            )
+            @RequestBody TransactionDTO transactionDTO,
+            @AuthenticationPrincipal UserDetailsImpl userDetails){
         return cardService.transfer(transactionDTO, userDetails);
     }
 }
