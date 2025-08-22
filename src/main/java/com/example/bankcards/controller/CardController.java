@@ -8,18 +8,32 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -78,13 +92,13 @@ public class CardController {
                             mediaType = "application/json",
                             examples = @ExampleObject(
                                     value = """
-                        {
-                          "finalDate": "2025-12-31",
-                          "status": "ACTIVE",
-                          "balance": 100000,
-                          "userId": 123
-                        }
-                        """
+                                            {
+                                              "finalDate": "2025-12-31",
+                                              "status": "ACTIVE",
+                                              "balance": 100000,
+                                              "userId": 123
+                                            }
+                                            """
                             )
                     )
             )
@@ -145,18 +159,28 @@ public class CardController {
                             mediaType = "application/json",
                             examples = @ExampleObject(
                                     value = """
-                        {
-                          "fromCardId": 1,
-                          "toCardId": 2,
-                          "amount": 5000,
-                          "description": "Перевод за услуги"
-                        }
-                        """
+                                            {
+                                              "fromCardId": 1,
+                                              "toCardId": 2,
+                                              "amount": 5000,
+                                              "description": "Перевод за услуги"
+                                            }
+                                            """
                             )
                     )
             )
             @RequestBody TransactionDTO transactionDTO,
-            @AuthenticationPrincipal UserDetailsImpl userDetails){
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return cardService.transfer(transactionDTO, userDetails);
+    }
+
+    @GetMapping("/search")
+    public Page<CardDTO> searchCards(
+            @RequestParam(value = "user_id", required = false) Long userId,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "final_date", required = false) LocalDate finalDate,
+            @ParameterObject @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return cardService.search(userId, status, finalDate, pageable);
     }
 }
