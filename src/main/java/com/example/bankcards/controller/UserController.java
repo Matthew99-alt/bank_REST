@@ -1,13 +1,11 @@
 package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.UserDTO;
-import com.example.bankcards.service.UserDetailsImpl;
 import com.example.bankcards.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -15,7 +13,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -60,7 +57,7 @@ public class UserController {
     public void deleteAUser(
             @Parameter(description = "ID пользователя", example = "123", required = true)
             @RequestParam("id") Long id) {
-        userService.deleteCard(id);
+        userService.deleteUser(id);
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -94,6 +91,6 @@ public class UserController {
                     )
             )
             @RequestBody @Valid UserDTO userDTO) {
-        return userService.editCard(userDTO);
+        return userService.editUser(userDTO);
     }
 }

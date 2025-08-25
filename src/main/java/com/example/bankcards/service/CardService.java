@@ -62,7 +62,6 @@ public class CardService {
             throw new DifferentIdentifierException("Идентификатор пользователя и владельца карты разные. В доступе отказано");
         }
 
-        //TODO: проверь как будет строить запрос Hibernate
         return cardRepository.findAllByUserId(userId)
                 .stream()
                 .map(cardMapper::makeACardDTO)
@@ -97,34 +96,32 @@ public class CardService {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public TransactionDTO transfer(TransactionDTO transactionDTO, UserDetailsImpl userDetails) {
 
-        if (!cardRepository.getReferenceById(transactionDTO.fromCardId()).getUser().getId().equals(userDetails.getId())) {
-            throw new DifferentIdentifierException("Введен не верный идентификатор");
-        }
-        if (!cardRepository.getReferenceById(transactionDTO.toCardId()).getUser().getId().equals(userDetails.getId())) {
-            throw new DifferentIdentifierException("Введен не верный идентификатор");
-        }
-
         Card getFromCard = cardRepository.getReferenceById(transactionDTO.fromCardId());
         Card getToCard = cardRepository.getReferenceById(transactionDTO.toCardId());
 
-        if (!Objects.equals(getToCard.getUser().getId(), getFromCard.getUser().getId())) {
-            throw new DifferentIdentifierException("Id of users of cards are different");
+        if (!getFromCard.getUser().getId().equals(userDetails.getId())) {
+            throw new DifferentIdentifierException("Введен не верный идентификатор");
+        }
+        if (!getToCard.getUser().getId().equals(userDetails.getId())) {
+            throw new DifferentIdentifierException("Введен не верный идентификатор");
         }
 
         if (transactionDTO.amount() < 0) {
             throw new NegativeBalanceException("Amount should be more than zero");
         }
-
         if (getFromCard.getStatus() != Status.ACTIVE || getToCard.getStatus() != Status.ACTIVE) {
             throw new UnactiveCardException("Both cards must be active for transaction");
         }
-
         if (Objects.equals(getToCard.getId(), getFromCard.getId())) {
             throw new SameCardException("The cards for transaction are the same");
         }
 
         getFromCard.setBalance(getFromCard.getBalance() - transactionDTO.amount());
         getToCard.setBalance(getToCard.getBalance() + transactionDTO.amount());
+
+        cardRepository.save(getFromCard);
+
+        cardRepository.save(getToCard);
 
         return transactionDTO;
     }
@@ -134,6 +131,7 @@ public class CardService {
         cardRepository.deleteById(id);
     }
 
+    @Transactional
     public Page<CardDTO> search(Long userId, String status, LocalDate finalDate, Pageable pageable) {
         Specification<Card> spec = Specification.where(null);
 
@@ -145,6 +143,9 @@ public class CardService {
         }
         if (finalDate != null) {
             spec = spec.and((root, q, cb) -> cb.equal(root.get("finalDate"), finalDate));
+        }
+        if (userId == null && status == null && finalDate == null){
+            throw new EntityNotFoundException("Для поиска необходимо заполнить хотя бы один из трёх параметров");
         }
 
         return cardRepository.findAll(spec, pageable).map(cardMapper::makeACardDTO);
