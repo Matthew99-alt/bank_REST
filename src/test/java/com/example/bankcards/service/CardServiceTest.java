@@ -11,7 +11,6 @@ import com.example.bankcards.exception.SameCardException;
 import com.example.bankcards.exception.UnactiveCardException;
 import com.example.bankcards.mapper.CardMapper;
 import com.example.bankcards.repository.CardRepository;
-import com.example.bankcards.repository.UsersRepository;
 import com.example.bankcards.util.RoleEnum;
 import com.example.bankcards.util.Status;
 import jakarta.persistence.EntityNotFoundException;
@@ -49,14 +48,173 @@ class CardServiceTest {
     private CardRepository cardRepository;
 
     @Mock
-    private UsersRepository usersRepository;
-
-    @Mock
     private CardMapper cardMapper;
 
     @InjectMocks
     private CardService cardService;
 
+    //findAllCardsTest
+    @Test
+    void findAllCardsTest() {
+        User user = makeAUser();
+        user.setId(1L);
+
+        Card card = makeACard(user);
+        card.setId(123L);
+
+        CardDTO cardDTO = new CardDTO();
+        cardDTO.setId(card.getId());
+
+        when(cardRepository.findAll()).thenReturn(List.of(card));
+        when(cardMapper.makeACardDTO(card)).thenReturn(cardDTO);
+
+        List<CardDTO> result = cardService.findAllCards();
+
+        assertNotNull(result);
+
+        verify(cardRepository, times(1)).findAll();
+        verify(cardMapper, times(1)).makeACardDTO(card);
+
+        assertEquals(123L, result.getFirst().getId());
+    }
+    //SaveCardTest
+    @Test
+    void saveCardTest() {
+        User user = makeAUser();
+        user.setId(1L);
+
+        Card card = makeACard(user);
+        card.setId(123L);
+
+        CardDTO cardDTO = makeACardDTO(card);
+        cardDTO.setId(card.getId());
+
+
+        when(cardRepository.save(card)).thenReturn(card);
+        when(cardMapper.makeACardDTO(card)).thenReturn(cardDTO);
+        when(cardMapper.makeACard(cardDTO)).thenReturn(card);
+
+        CardDTO result = cardService.saveCard(cardDTO);
+
+        assertNotNull(result);
+
+        assertNotNull(result);
+        assertEquals(card.getId(), result.getId());
+        assertEquals(card.getBalance(), result.getBalance());
+
+        verify(cardRepository, times(1)).save(any(Card.class));
+        verify(cardMapper, times(1)).makeACardDTO(card);
+    }
+    @Test
+    void saveCardTest_NegativeBalance() {
+        User user = makeAUser();
+        user.setId(1L);
+
+        Card card = makeACard(user);
+        card.setId(123L);
+
+        CardDTO cardDTO = makeACardDTO(card);
+        cardDTO.setId(card.getId());
+        cardDTO.setBalance(-100L);
+
+
+        NegativeBalanceException exception = assertThrows(
+                NegativeBalanceException.class,
+                () -> cardService.saveCard(cardDTO)
+        );
+
+        assertEquals("Недостаточно средств", exception.getMessage());
+
+        verify(cardRepository, never()).save(any(Card.class));
+        verify(cardMapper, never()).makeACard(any(CardDTO.class));
+        verify(cardMapper, never()).makeACardDTO(any(Card.class));
+    }
+    //blockCardTest
+    @Test
+    void blockCardTest() {
+        User user = makeAUser();
+        user.setId(1L);
+
+        Card card = makeACard(user);
+        card.setId(1L);
+        card.setStatus(Status.ACTIVE);
+
+        when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
+        when(cardRepository.save(any(Card.class))).thenAnswer(
+                invocation -> invocation.<Card>getArgument(0));
+
+        when(cardMapper.makeACardDTO(any(Card.class))).thenAnswer(invocation -> {
+            Card cardArg = invocation.getArgument(0);
+            CardDTO dto = new CardDTO();
+            dto.setId(cardArg.getId());
+            dto.setStatus(cardArg.getStatus().name());
+            return dto;
+        });
+
+        CardDTO result = cardService.blockCard(1L);
+
+        assertEquals(Status.BLOCKED, card.getStatus());
+
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+        assertEquals("BLOCKED", result.getStatus());
+
+        verify(cardRepository, times(1)).findById(1L);
+        verify(cardRepository, times(1)).save(card);
+        verify(cardMapper, times(1)).makeACardDTO(card);
+    }
+    //blockCardTest
+    @Test
+    void activateCardTest() {
+        User user = makeAUser();
+        user.setId(1L);
+
+        Card card = makeACard(user);
+        card.setId(1L);
+        card.setStatus(Status.BLOCKED);
+
+        when(cardRepository.findById(1L)).thenReturn(Optional.of(card));
+        when(cardRepository.save(any(Card.class))).thenAnswer(
+                invocation -> invocation.<Card>getArgument(0));
+
+        when(cardMapper.makeACardDTO(any(Card.class))).thenAnswer(invocation -> {
+            Card cardArg = invocation.getArgument(0);
+            CardDTO dto = new CardDTO();
+            dto.setId(cardArg.getId());
+            dto.setStatus(cardArg.getStatus().name());
+            return dto;
+        });
+
+        CardDTO result = cardService.activateCard(1L);
+
+        assertEquals(Status.ACTIVE, card.getStatus());
+
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+        assertEquals("ACTIVE", result.getStatus());
+
+        verify(cardRepository, times(1)).findById(1L);
+        verify(cardRepository, times(1)).save(card);
+        verify(cardMapper, times(1)).makeACardDTO(card);
+    }
+
+    //deleteCard
+    @Test
+    void deleteCardTest() {
+        User user = makeAUser();
+        user.setId(1L);
+
+        Card card = makeACard(user);
+        card.setId(1L);
+
+        doNothing().when(cardRepository).deleteById(1L);
+
+        cardService.deleteCard(1L);
+
+        verify(cardRepository, times(1)).deleteById(1L);
+    }
+
+    //тест метода transfer
     @Test
     void transfer_Success() {
         User user = makeAUser();
@@ -87,7 +245,6 @@ class CardServiceTest {
 
     @Test
     void transfer_WhenFromCardNotOwnedByUser_ShouldThrowException() {
-        // Given
         User owner = makeAUser();
         owner.setId(1L);
 
@@ -103,12 +260,11 @@ class CardServiceTest {
         toCard.setUser(owner);
 
         TransactionDTO transactionDTO = new TransactionDTO(2L, 1L, 1000L);
-        UserDetailsImpl attackerDetails = makeUserDetails(attacker); // Аутентификация attacker
+        UserDetailsImpl attackerDetails = makeUserDetails(attacker);
 
         when(cardRepository.getReferenceById(2L)).thenReturn(fromCard);
         when(cardRepository.getReferenceById(1L)).thenReturn(toCard);
 
-        // When & Then
         assertThrows(DifferentIdentifierException.class, () -> {
             cardService.transfer(transactionDTO, attackerDetails);
         });
@@ -127,11 +283,11 @@ class CardServiceTest {
 
         Card fromCard = new Card();
         fromCard.setId(2L);
-        fromCard.setUser(attacker); // fromCard принадлежит attacker
+        fromCard.setUser(attacker);
 
         Card toCard = new Card();
         toCard.setId(1L);
-        toCard.setUser(owner); // toCard принадлежит owner (чужой!)
+        toCard.setUser(owner);
 
         TransactionDTO transactionDTO = new TransactionDTO(2L, 1L, 1000L);
         UserDetailsImpl attackerDetails = makeUserDetails(attacker);
@@ -139,7 +295,6 @@ class CardServiceTest {
         when(cardRepository.getReferenceById(2L)).thenReturn(fromCard);
         when(cardRepository.getReferenceById(1L)).thenReturn(toCard);
 
-        // When & Then
         assertThrows(DifferentIdentifierException.class, () -> {
             cardService.transfer(transactionDTO, attackerDetails);
         });
@@ -221,7 +376,7 @@ class CardServiceTest {
 
         verify(cardRepository, never()).save(any());
     }
-
+    //findByUserId
     @Test
     void getCardsByUserId_Test() {
         Long userId = 1L;
@@ -261,6 +416,25 @@ class CardServiceTest {
     }
 
     @Test
+    void getCardsByUserId_WhenNoCards_ShouldReturnEmptyList() {
+        Long userId = 1L;
+        User user = makeAUser();
+        user.setId(userId);
+
+        UserDetailsImpl userDetails = makeUserDetails(user);
+
+        when(cardRepository.findAllByUserId(userId)).thenReturn(Collections.emptyList());
+
+        List<CardDTO> result = cardService.findByUserId(userId, userDetails);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(cardRepository, times(1)).findAllByUserId(userId);
+        verify(cardMapper, never()).makeACardDTO(any());
+    }
+    //findById
+    @Test
     void getCardsById_Test() {
         User user = makeAUser();
         user.setId(1L);
@@ -293,26 +467,7 @@ class CardServiceTest {
 
         verify(cardMapper, never()).makeACardDTO(any());
     }
-    
-    @Test
-    void getCardsByUserId_WhenNoCards_ShouldReturnEmptyList() {
-        Long userId = 1L;
-        User user = makeAUser();
-        user.setId(userId);
-
-        UserDetailsImpl userDetails = makeUserDetails(user);
-
-        when(cardRepository.findAllByUserId(userId)).thenReturn(Collections.emptyList());
-
-        List<CardDTO> result = cardService.findByUserId(userId, userDetails);
-
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-
-        verify(cardRepository, times(1)).findAllByUserId(userId);
-        verify(cardMapper, never()).makeACardDTO(any());
-    }
-
+    //Тест метода Search
     @Test
     void search_WhenAllParamsNull_ShouldThrowException() {
         Pageable pageable = PageRequest.of(0, 10);
@@ -353,7 +508,7 @@ class CardServiceTest {
         assertEquals(1, result.getTotalElements());
         verify(cardMapper).makeACardDTO(card);
     }
-
+    //Приватные методы теста
     private static Stream<Arguments> searchParametersProvider() {
         return Stream.of(
                 Arguments.of(1L, null, null),
@@ -403,6 +558,16 @@ class CardServiceTest {
                 List.of(new SimpleGrantedAuthority("ROLE_USER")),
                 user.getPhoneNumber()
         );
+    }
+    public CardDTO makeACardDTO(Card card) {
+        CardDTO cardDTO = new CardDTO();
 
+        cardDTO.setId(card.getId());
+        cardDTO.setBalance(card.getBalance());
+        cardDTO.setStatus(card.getStatus().toString());
+        cardDTO.setFinalDate(card.getFinalDate());
+        cardDTO.setUserId(card.getUser().getId());
+
+        return cardDTO;
     }
 }
