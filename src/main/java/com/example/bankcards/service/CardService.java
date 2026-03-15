@@ -3,10 +3,7 @@ package com.example.bankcards.service;
 import com.example.bankcards.dto.CardDTO;
 import com.example.bankcards.dto.TransactionDTO;
 import com.example.bankcards.entity.Card;
-import com.example.bankcards.exception.DifferentIdentifierException;
-import com.example.bankcards.exception.NegativeBalanceException;
-import com.example.bankcards.exception.SameCardException;
-import com.example.bankcards.exception.UnactiveCardException;
+import com.example.bankcards.exception.*;
 import com.example.bankcards.mapper.CardMapper;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.util.Status;
@@ -103,6 +100,10 @@ public class CardService {
 
         if (Objects.equals(getToCard.getId(), getFromCard.getId())) {
             throw new SameCardException("The cards for transaction are the same");
+        }
+
+        if (transactionDTO.email().isEmpty()){
+            throw new NoEmailException("There is no email to send the transaction information");
         }
 
         getFromCard.setBalance(getFromCard.getBalance() - transactionDTO.amount());

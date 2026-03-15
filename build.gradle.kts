@@ -14,15 +14,18 @@ java {
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
-
 dependencies {
 	// Spring
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	runtimeOnly("org.postgresql:postgresql")
+
+    // Spring Kafka
+    implementation("org.springframework.boot:spring-boot-starter-mail")
+    implementation("org.springframework.kafka:spring-kafka:3.3.13")
 
 	// Lombok
 	compileOnly("org.projectlombok:lombok")

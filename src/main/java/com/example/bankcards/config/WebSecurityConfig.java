@@ -60,6 +60,18 @@ public class WebSecurityConfig {
     }
 
     @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests(authz -> authz
+                        .anyRequest().permitAll()   // все запросы разрешены
+                )
+                .csrf().disable()                // отключаем CSRF (для простоты)
+                .formLogin().disable()            // отключаем форму логина
+                .httpBasic().disable();           // отключаем HTTP Basic
+        return http.build();
+    }
+
+/*    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            DaoAuthenticationProvider authProvider,
                                            AuthTokenFilter authTokenFilter,
@@ -86,5 +98,5 @@ public class WebSecurityConfig {
                 .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
+    }*/
 }

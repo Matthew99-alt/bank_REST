@@ -24,3 +24,22 @@ spring:
 security:
   token: tstrs4g434wyhser5htstrs4g434wyhser5htstrs4g434wyhser5htstrs4g434wyhser5htstrs4g434wyhser5h
   expiration: 86400000 #ms дата и время когда токен все, прибавляется ко моменту создания
+t1:
+   kafka:
+    bootstrap:
+      server: localhost:9092
+    consumer:
+      group-id: my-group-id
+    session:
+      timeout:
+        ms: 20000
+    max:
+      partition:
+        fetch:
+          bytes: 524288
+      poll:
+        records: 5
+        interval:
+          ms: 5000
+   topic:
+      client_id_registered: client-events
