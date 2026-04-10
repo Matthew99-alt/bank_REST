@@ -28,7 +28,7 @@ public class NotificationService {
                 event.amount().doubleValue(),   // ← FIX
                 maskCardNumber(event.fromCardId().toString()),
                 maskCardNumber(event.toCardId().toString()),
-                LocalDateTime.now().toString()  // ← FIX (or a proper timestamp)
+                LocalDateTime.now()  // ← FIX (or a proper timestamp)
         ));
 
         try {

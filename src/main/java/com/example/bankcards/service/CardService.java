@@ -35,9 +35,9 @@ public class CardService {
 
     private final CardRepository cardRepository;
     private final CardMapper cardMapper;
-    private final KafkaTemplate<String, TransactionDTO> kafkaTemplate;
+    private final KafkaTemplate<String, TransactionDTO> kafkaTemplate; //TODO: нужен продюсер
     @Value("${t1.kafka.topic.transfer}")
-    private String transferTopic;  // e.g., "${t1.kafka.topic.transfer}"
+    private String transferTopic;
 
     @Transactional(readOnly = true)
     public List<CardDTO> findAllCards() {
@@ -67,14 +67,14 @@ public class CardService {
 
     @Transactional
     public CardDTO blockCard(Long cardId) {
-        Card card = cardRepository.findById(cardId).orElseThrow();
+        Card card = cardRepository.findById(cardId).orElseThrow(); // ?
         card.setStatus(Status.BLOCKED);
         return cardMapper.makeACardDTO(cardRepository.save(card));
     }
 
     @Transactional
     public CardDTO activateCard(Long cardId) {
-        Card card = cardRepository.findById(cardId).orElseThrow();
+        Card card = cardRepository.findById(cardId).orElseThrow(); // ?
         card.setStatus(Status.ACTIVE);
         return cardMapper.makeACardDTO(cardRepository.save(card));
     }
@@ -89,10 +89,8 @@ public class CardService {
             throw new DifferentIdentifierException("Введен не верный идентификатор");
         }*/
 
-
-
         // Send to Kafka
-        kafkaTemplate.send(transferTopic, transactionDTO);
+        kafkaTemplate.send(transferTopic, transactionDTO); // TODO: уведомление только после факта совершения операции
         log.info("Transfer event sent to Kafka: {}", transactionDTO);
 
         Card getFromCard = cardRepository.getReferenceById(transactionDTO.fromCardId());
@@ -114,11 +112,12 @@ public class CardService {
             throw new SameCardException("The cards for transaction are the same");
         }
 
-        if (transactionDTO.email().isEmpty()){
+        if (transactionDTO.email().isEmpty()) {
             throw new NoEmailException("There is no email to send the transaction information");
         }
 
-        getFromCard.setBalance(getFromCard.getBalance() - transactionDTO.amount());
+        //TODO: попробуй сохранить в бд, ну так… на всякий случай (cardRepository)
+        getFromCard.setBalance(getFromCard.getBalance() - transactionDTO.amount()); // деньги чуть-чуть ограничены бывают)
         getToCard.setBalance(getToCard.getBalance() + transactionDTO.amount());
 
         return transactionDTO;
@@ -127,13 +126,13 @@ public class CardService {
     @Transactional(readOnly = true)
     public List<CardDTO> findByUserId(Long userId, UserDetailsImpl userDetails) {
 
-        if(!userDetails.getId().equals(userId)){
+        if (!userDetails.getId().equals(userId)) {
             throw new DifferentIdentifierException("Идентификатор пользователя и владельца карты разные. В доступе отказано");
         }
 
         return cardRepository.findAll()
                 .stream()
-                .filter(card -> card.getUser().getId().equals(userId))
+                .filter(card -> card.getUser().getId().equals(userId)) // todo: нужно сделать на уровне БД, еще в запросе
                 .map(cardMapper::makeACardDTO)
                 .toList();
     }

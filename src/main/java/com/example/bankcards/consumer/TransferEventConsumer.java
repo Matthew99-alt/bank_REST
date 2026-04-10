@@ -22,11 +22,11 @@ public class TransferEventConsumer {
         log.info("Received transfer event: {}", event);
         try {
             notificationService.sendEmailNotification(event);
-            ack.acknowledge();
+            ack.acknowledge(); // TODO: а зачем?
             log.info("Event processed and acknowledged");
         } catch (Exception e) {
             log.error("Error processing transfer event: {}", e.getMessage(), e);
-            ack.acknowledge();
+            ack.acknowledge(); // TODO: как это связано с идемпотентностью?
         }
     }
 }

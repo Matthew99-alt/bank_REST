@@ -1,9 +1,8 @@
 package com.example.bankcards.config;
 
 
-import com.example.bankcards.dto.TransactionDTO;
-import com.example.bankcards.producer.KafkaClientProducer;
 import com.example.bankcards.dto.CardDTO;
+import com.example.bankcards.dto.TransactionDTO;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -12,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -105,20 +103,6 @@ public class KafkaConfig {
         return handler;
     }
 
-    @Bean("client")
-    public KafkaTemplate<String, CardDTO> kafkaTemplate(ProducerFactory<String, CardDTO> producerPatFactory) {
-        return new KafkaTemplate<>(producerPatFactory);
-    }
-
-    @Bean
-    @ConditionalOnProperty(value = "сom.example.bankcards.producer.enable",
-            havingValue = "true",
-            matchIfMissing = true)
-    public KafkaClientProducer producerClient(@Qualifier("client") KafkaTemplate template) {
-        template.setDefaultTopic(clientTopic);
-        return new KafkaClientProducer(template);
-    }
-
     @Bean
     public ProducerFactory<String, TransactionDTO> transferProducerFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -133,16 +117,6 @@ public class KafkaConfig {
     public KafkaTemplate<String, TransactionDTO> transferKafkaTemplate(
             @Qualifier("transferProducerFactory") ProducerFactory<String, TransactionDTO> factory) {
         return new KafkaTemplate<>(factory);
-    }
-
-    @Bean
-    public ProducerFactory<String, CardDTO> producerClientFactory() {
-        Map<String, Object> props = new HashMap<>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, servers);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        props.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, false);
-        return new DefaultKafkaProducerFactory<>(props);
     }
 
     @Bean
