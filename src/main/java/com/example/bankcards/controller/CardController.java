@@ -43,7 +43,7 @@ public class CardController {
         return cardService.findByUserId(id, userDetails);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    //@PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/")
     public CardDTO saveACard(@RequestBody @Valid CardDTO cardDTO) {
         return cardService.saveCard(cardDTO);
@@ -69,6 +69,6 @@ public class CardController {
 
     @PostMapping("/transfer")
     public TransactionDTO transfer(@RequestBody TransactionDTO transactionDTO, @AuthenticationPrincipal UserDetailsImpl userDetails){
-        return cardService.transfer(transactionDTO, userDetails);
+        return cardService.transfer(transactionDTO/*, userDetails*/);
     }
 }

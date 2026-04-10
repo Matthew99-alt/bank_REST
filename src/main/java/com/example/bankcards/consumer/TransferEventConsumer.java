@@ -1,7 +1,6 @@
 package com.example.bankcards.consumer;
 
 import com.example.bankcards.dto.TransactionDTO;
-import com.example.bankcards.dto.TransferEvent;
 import com.example.bankcards.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

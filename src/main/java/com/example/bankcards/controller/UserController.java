@@ -35,6 +35,13 @@ public class UserController {
         return userService.findUserById(id);
     }
 
+    //@PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping("/save")
+    public UserDTO saveAUser(@RequestBody @Valid UserDTO userDTO) {
+        return userService.saveUser(userDTO);
+    }
+
+
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/delete")
     public void deleteAUser(@RequestParam("id") Long id) {

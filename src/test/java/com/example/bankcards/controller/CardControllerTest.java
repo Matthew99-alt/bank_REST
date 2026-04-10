@@ -245,7 +245,7 @@ public class CardControllerTest {
         card.setFinalDate(LocalDate.parse("2025-12-31"));
         cardRepository.save(card);
 
-        return new TransactionDTO(card.getId(), card1.getId(), 100000L);
+        return new TransactionDTO(card.getId(), card1.getId(), 100000L, "mock");
     }
 
     private UserDetailsImpl makeUserDetails(User user){

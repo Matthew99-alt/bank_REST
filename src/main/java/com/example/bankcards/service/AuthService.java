@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 import com.example.bankcards.util.RoleEnum;
 
-@Service
+//@Service
 @RequiredArgsConstructor
 public class AuthService {
 

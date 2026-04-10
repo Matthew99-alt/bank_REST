@@ -2,7 +2,25 @@
 # application.yml — главный конфигурационный файл Spring Boot.
 #
 
+logging:
+  level:
+    org.springframework.kafka: DEBUG
+    org.apache.kafka.clients.consumer: DEBUG
+
 spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ariafromrissia@gmail.com
+    password: fsle nfve itoe wwag
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.gmail.com
   datasource:
     url: jdbc:postgresql://localhost:5434/cardsdata
     username: postgres
@@ -25,7 +43,7 @@ security:
   token: tstrs4g434wyhser5htstrs4g434wyhser5htstrs4g434wyhser5htstrs4g434wyhser5htstrs4g434wyhser5h
   expiration: 86400000 #ms дата и время когда токен все, прибавляется ко моменту создания
 t1:
-   kafka:
+  kafka:                       # exactly 2 spaces indentation
     bootstrap:
       server: localhost:9092
     consumer:
@@ -41,5 +59,6 @@ t1:
         records: 5
         interval:
           ms: 5000
-   topic:
+    topic:                     # Must be indented under 'kafka'
       client_id_registered: client-events
+      transfer: transfer-events

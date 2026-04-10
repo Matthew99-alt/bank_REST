@@ -19,7 +19,7 @@ public class KafkaTestController {
 
     @PostMapping("/send")
     public String sendMessage(@RequestBody CardDTO card) {
-        kafkaTemplate.send("client-topic", card); // используйте имя вашего топика
+        kafkaTemplate.send("client-topic", card);
         return "Message sent to Kafka";
     }
 }

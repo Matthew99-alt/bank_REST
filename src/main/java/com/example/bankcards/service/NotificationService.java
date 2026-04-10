@@ -7,6 +7,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -23,10 +25,10 @@ public class NotificationService {
                         "Перевод на сумму %.2f с карты %s на карту %s успешно выполнен.\n" +
                         "Дата и время операции: %s\n\n" +
                         "С уважением, команда банка.",
-                event.amount(),
+                event.amount().doubleValue(),   // ← FIX
                 maskCardNumber(event.fromCardId().toString()),
                 maskCardNumber(event.toCardId().toString()),
-                event.email()
+                LocalDateTime.now().toString()  // ← FIX (or a proper timestamp)
         ));
 
         try {
@@ -34,7 +36,6 @@ public class NotificationService {
             log.info("Email sent to {}", event.email());
         } catch (Exception e) {
             log.error("Failed to send email: {}", e.getMessage());
-            // Можно пробросить исключение, чтобы консьюмер повторил попытку
             throw new RuntimeException("Email sending failed", e);
         }
     }

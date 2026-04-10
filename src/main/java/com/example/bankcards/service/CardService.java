@@ -9,6 +9,9 @@ import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.util.Status;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,13 +28,16 @@ import java.util.Objects;
  * @see CardMapper
  * @see com.example.bankcards.controller.CardController
  */
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CardService {
 
     private final CardRepository cardRepository;
     private final CardMapper cardMapper;
+    private final KafkaTemplate<String, TransactionDTO> kafkaTemplate;
+    @Value("${t1.kafka.topic.transfer}")
+    private String transferTopic;  // e.g., "${t1.kafka.topic.transfer}"
 
     @Transactional(readOnly = true)
     public List<CardDTO> findAllCards() {
@@ -74,14 +80,20 @@ public class CardService {
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public TransactionDTO transfer(TransactionDTO transactionDTO, UserDetailsImpl userDetails) {
+    public TransactionDTO transfer(TransactionDTO transactionDTO/*, UserDetailsImpl userDetails*/) {
 
-        if (!cardRepository.getReferenceById(transactionDTO.fromCardId()).getUser().getId().equals(userDetails.getId())){
+        /*if (!cardRepository.getReferenceById(transactionDTO.fromCardId()).getUser().getId().equals(userDetails.getId())){
             throw new DifferentIdentifierException("Введен не верный идентификатор");
         }
         if (!cardRepository.getReferenceById(transactionDTO.toCardId()).getUser().getId().equals(userDetails.getId())){
             throw new DifferentIdentifierException("Введен не верный идентификатор");
-        }
+        }*/
+
+
+
+        // Send to Kafka
+        kafkaTemplate.send(transferTopic, transactionDTO);
+        log.info("Transfer event sent to Kafka: {}", transactionDTO);
 
         Card getFromCard = cardRepository.getReferenceById(transactionDTO.fromCardId());
         Card getToCard = cardRepository.getReferenceById(transactionDTO.toCardId());

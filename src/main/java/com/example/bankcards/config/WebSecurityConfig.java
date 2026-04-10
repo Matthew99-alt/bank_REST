@@ -71,7 +71,7 @@ public class WebSecurityConfig {
         return http.build();
     }
 
-/*    @Bean
+//    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            DaoAuthenticationProvider authProvider,
                                            AuthTokenFilter authTokenFilter,
@@ -98,5 +98,5 @@ public class WebSecurityConfig {
                 .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }*/
+    }
 }
