@@ -22,11 +22,13 @@ public class TransferEventConsumer {
         log.info("Received transfer event: {}", event);
         try {
             notificationService.sendEmailNotification(event);
-            ack.acknowledge(); // TODO: а зачем?
+            //Как я понял, это сигнал кафке сдвигать offset, так как сообщение обработано и всё гуд
+            ack.acknowledge();
             log.info("Event processed and acknowledged");
         } catch (Exception e) {
             log.error("Error processing transfer event: {}", e.getMessage(), e);
-            ack.acknowledge(); // TODO: как это связано с идемпотентностью?
+            //Поэтому, здесь я его убрал. чтобы если проблемы с сообщением, пусть отправляется обратно в очередь
+            //в финансовых операциях нужна идемпотентность
         }
     }
 }

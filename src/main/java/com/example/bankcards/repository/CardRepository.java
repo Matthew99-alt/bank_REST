@@ -4,6 +4,8 @@ import com.example.bankcards.entity.Card;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * Репозиторий отвечающий за работу с таблицей указанной в сущности Card
  * @see  Card
@@ -12,5 +14,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CardRepository extends JpaRepository<Card, Long> {
     Card findByUserId(Long userId);
+
+    List<Card> findAllByUserId(Long userId);
 }
 

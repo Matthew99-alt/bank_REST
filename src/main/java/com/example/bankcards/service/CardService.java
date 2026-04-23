@@ -5,6 +5,7 @@ import com.example.bankcards.dto.TransactionDTO;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.exception.*;
 import com.example.bankcards.mapper.CardMapper;
+import com.example.bankcards.producer.TransferEventProducer;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.util.Status;
 import jakarta.persistence.EntityNotFoundException;
@@ -35,7 +36,7 @@ public class CardService {
 
     private final CardRepository cardRepository;
     private final CardMapper cardMapper;
-    private final KafkaTemplate<String, TransactionDTO> kafkaTemplate; //TODO: нужен продюсер
+    private final TransferEventProducer transferEventProducer; //Вроде как добавил консьюмер
     @Value("${t1.kafka.topic.transfer}")
     private String transferTopic;
 
@@ -89,19 +90,12 @@ public class CardService {
             throw new DifferentIdentifierException("Введен не верный идентификатор");
         }*/
 
-        // Send to Kafka
-        kafkaTemplate.send(transferTopic, transactionDTO); // TODO: уведомление только после факта совершения операции
-        log.info("Transfer event sent to Kafka: {}", transactionDTO);
 
         Card getFromCard = cardRepository.getReferenceById(transactionDTO.fromCardId());
         Card getToCard = cardRepository.getReferenceById(transactionDTO.toCardId());
 
         if (!Objects.equals(getToCard.getUser().getId(), getFromCard.getUser().getId())) {
             throw new DifferentIdentifierException("Id of users of cards are different");
-        }
-
-        if (transactionDTO.amount() < 0) {
-            throw new NegativeBalanceException("Amount should be more than zero");
         }
 
         if (getFromCard.getStatus() != Status.ACTIVE || getToCard.getStatus() != Status.ACTIVE) {
@@ -116,9 +110,28 @@ public class CardService {
             throw new NoEmailException("There is no email to send the transaction information");
         }
 
-        //TODO: попробуй сохранить в бд, ну так… на всякий случай (cardRepository)
-        getFromCard.setBalance(getFromCard.getBalance() - transactionDTO.amount()); // деньги чуть-чуть ограничены бывают)
+        //Вот, выбросим исключение если баланс негативный
+        if (getFromCard.getBalance()-transactionDTO.amount()<0){
+            throw new NegativeBalanceException("That amount of money is too huge for the card");
+        }
+
+        getFromCard.setBalance(getFromCard.getBalance() - transactionDTO.amount());
         getToCard.setBalance(getToCard.getBalance() + transactionDTO.amount());
+
+        //Сохранил, на всякий случай
+
+        Card firstCard = cardRepository.getReferenceById(getFromCard.getId());
+        Card secondCard = cardRepository.getReferenceById(getToCard.getId());
+
+        firstCard.setBalance(getFromCard.getBalance());
+        secondCard.setBalance(getToCard.getBalance());
+
+        cardRepository.save(firstCard);
+        cardRepository.save(secondCard);
+
+        // Send to Kafka
+        transferEventProducer.sendTransferEvent(transactionDTO);
+        log.info("Transfer event sent to Kafka: {}", transactionDTO);
 
         return transactionDTO;
     }
@@ -130,9 +143,9 @@ public class CardService {
             throw new DifferentIdentifierException("Идентификатор пользователя и владельца карты разные. В доступе отказано");
         }
 
-        return cardRepository.findAll()
-                .stream()
-                .filter(card -> card.getUser().getId().equals(userId)) // todo: нужно сделать на уровне БД, еще в запросе
+        List<Card> cards = cardRepository.findAllByUserId(userId);
+
+        return cards.stream()
                 .map(cardMapper::makeACardDTO)
                 .toList();
     }

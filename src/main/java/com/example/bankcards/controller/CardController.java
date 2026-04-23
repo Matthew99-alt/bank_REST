@@ -25,7 +25,7 @@ public class CardController {
 
     private final CardService cardService;
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    //@PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/")
     public List<CardDTO> getAllCards() {
         return cardService.findAllCards();
