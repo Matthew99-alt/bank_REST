@@ -3,10 +3,10 @@ package com.example.bankcards.controller;
 import com.example.bankcards.dto.CardDTO;
 import com.example.bankcards.dto.TransactionDTO;
 import com.example.bankcards.service.CardService;
+import com.example.bankcards.service.TransferFacadeService;
 import com.example.bankcards.service.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +15,7 @@ import java.util.List;
 
 /**
  * Контроллер для запросов связанных с катрами
-*/
+ */
 
 @RestController
 @RequestMapping("/cards")
@@ -24,6 +24,7 @@ import java.util.List;
 public class CardController {
 
     private final CardService cardService;
+    private final TransferFacadeService transferFacadeService;
 
     //@PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/")
@@ -68,7 +69,7 @@ public class CardController {
     }
 
     @PostMapping("/transfer")
-    public TransactionDTO transfer(@RequestBody TransactionDTO transactionDTO, @AuthenticationPrincipal UserDetailsImpl userDetails){
-        return cardService.transfer(transactionDTO/*, userDetails*/);
+    public TransactionDTO transfer(@RequestBody TransactionDTO transactionDTO, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return transferFacadeService.transferWithNotification(transactionDTO/*, userDetails*/);
     }
 }

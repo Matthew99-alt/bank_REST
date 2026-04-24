@@ -27,7 +27,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableMethodSecurity
 @RequiredArgsConstructor
-@Profile("!test")
+@Profile("!test") // todo: добавь еще local и убери втопрой бин filterChain
 public class WebSecurityConfig {
 
     private final UserDetailsService userDetailsService;
@@ -70,7 +70,6 @@ public class WebSecurityConfig {
                 .httpBasic().disable();           // отключаем HTTP Basic
         return http.build();
     }
-
 //    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            DaoAuthenticationProvider authProvider,

@@ -41,8 +41,6 @@ public class KafkaConfig {
     private String maxPollRecords;
     @Value("${t1.kafka.max.poll.interval.ms:3000}")
     private String maxPollIntervalsMs;
-    @Value("${t1.kafka.topic.client_id_registered}")
-    private String clientTopic;
 
     private static final Logger log = LoggerFactory.getLogger(KafkaConfig.class);
 

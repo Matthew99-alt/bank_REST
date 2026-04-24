@@ -8,12 +8,12 @@ import java.util.List;
 
 /**
  * Репозиторий отвечающий за работу с таблицей указанной в сущности Card
- * @see  Card
-*/
+ *
+ * @see Card
+ */
 
 @Repository
 public interface CardRepository extends JpaRepository<Card, Long> {
-    Card findByUserId(Long userId);
 
     List<Card> findAllByUserId(Long userId);
 }

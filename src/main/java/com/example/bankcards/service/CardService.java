@@ -5,14 +5,11 @@ import com.example.bankcards.dto.TransactionDTO;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.exception.*;
 import com.example.bankcards.mapper.CardMapper;
-import com.example.bankcards.producer.TransferEventProducer;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.util.Status;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,9 +33,6 @@ public class CardService {
 
     private final CardRepository cardRepository;
     private final CardMapper cardMapper;
-    private final TransferEventProducer transferEventProducer; //Вроде как добавил консьюмер
-    @Value("${t1.kafka.topic.transfer}")
-    private String transferTopic;
 
     @Transactional(readOnly = true)
     public List<CardDTO> findAllCards() {
@@ -57,7 +51,6 @@ public class CardService {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public CardDTO saveCard(CardDTO cardDTO) {
-
         if (cardDTO.getBalance() < 0) {
             throw new NegativeBalanceException("Недостаточно средств");
         }
@@ -80,7 +73,7 @@ public class CardService {
         return cardMapper.makeACardDTO(cardRepository.save(card));
     }
 
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional(isolation = Isolation.SERIALIZABLE) // todo: почитай пока про уровни изоляции в бд
     public TransactionDTO transfer(TransactionDTO transactionDTO/*, UserDetailsImpl userDetails*/) {
 
         /*if (!cardRepository.getReferenceById(transactionDTO.fromCardId()).getUser().getId().equals(userDetails.getId())){
@@ -90,19 +83,18 @@ public class CardService {
             throw new DifferentIdentifierException("Введен не верный идентификатор");
         }*/
 
+        Card source = cardRepository.getReferenceById(transactionDTO.fromCardId());
+        Card target = cardRepository.getReferenceById(transactionDTO.toCardId());
 
-        Card getFromCard = cardRepository.getReferenceById(transactionDTO.fromCardId());
-        Card getToCard = cardRepository.getReferenceById(transactionDTO.toCardId());
-
-        if (!Objects.equals(getToCard.getUser().getId(), getFromCard.getUser().getId())) {
+        if (!Objects.equals(target.getUser().getId(), source.getUser().getId())) {
             throw new DifferentIdentifierException("Id of users of cards are different");
         }
 
-        if (getFromCard.getStatus() != Status.ACTIVE || getToCard.getStatus() != Status.ACTIVE) {
+        if (source.getStatus() != Status.ACTIVE || target.getStatus() != Status.ACTIVE) {
             throw new UnactiveCardException("Both cards must be active for transaction");
         }
 
-        if (Objects.equals(getToCard.getId(), getFromCard.getId())) {
+        if (Objects.equals(target.getId(), source.getId())) {
             throw new SameCardException("The cards for transaction are the same");
         }
 
@@ -111,27 +103,16 @@ public class CardService {
         }
 
         //Вот, выбросим исключение если баланс негативный
-        if (getFromCard.getBalance()-transactionDTO.amount()<0){
+        if (source.getBalance() - transactionDTO.amount() < 0) {
             throw new NegativeBalanceException("That amount of money is too huge for the card");
         }
 
-        getFromCard.setBalance(getFromCard.getBalance() - transactionDTO.amount());
-        getToCard.setBalance(getToCard.getBalance() + transactionDTO.amount());
+        source.setBalance(source.getBalance() - transactionDTO.amount());
+        target.setBalance(target.getBalance() + transactionDTO.amount());
 
-        //Сохранил, на всякий случай
-
-        Card firstCard = cardRepository.getReferenceById(getFromCard.getId());
-        Card secondCard = cardRepository.getReferenceById(getToCard.getId());
-
-        firstCard.setBalance(getFromCard.getBalance());
-        secondCard.setBalance(getToCard.getBalance());
-
-        cardRepository.save(firstCard);
-        cardRepository.save(secondCard);
-
-        // Send to Kafka
-        transferEventProducer.sendTransferEvent(transactionDTO);
-        log.info("Transfer event sent to Kafka: {}", transactionDTO);
+        //todo: проверь без этого
+        cardRepository.save(source);
+        cardRepository.save(target);
 
         return transactionDTO;
     }

@@ -10,7 +10,7 @@ import java.util.Set;
 
 @Setter
 @Getter
-public class SignupRequest {
+public class SignupRequest { //todo: не используется
 
     @NotBlank
     @Size(min = 3, max = 20)
