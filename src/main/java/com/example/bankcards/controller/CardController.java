@@ -3,7 +3,6 @@ package com.example.bankcards.controller;
 import com.example.bankcards.dto.CardDTO;
 import com.example.bankcards.dto.TransactionDTO;
 import com.example.bankcards.service.CardService;
-import com.example.bankcards.service.TransferFacadeService;
 import com.example.bankcards.service.UserDetailsImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,6 @@ import java.util.List;
 public class CardController {
 
     private final CardService cardService;
-    private final TransferFacadeService transferFacadeService;
 
     //@PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/")
@@ -70,6 +68,6 @@ public class CardController {
 
     @PostMapping("/transfer")
     public TransactionDTO transfer(@RequestBody TransactionDTO transactionDTO, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return transferFacadeService.transferWithNotification(transactionDTO/*, userDetails*/);
+        return cardService.transfer(transactionDTO/*, userDetails*/);
     }
 }

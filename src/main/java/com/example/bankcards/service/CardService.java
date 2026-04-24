@@ -10,6 +10,7 @@ import com.example.bankcards.util.Status;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,7 @@ public class CardService {
 
     private final CardRepository cardRepository;
     private final CardMapper cardMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public List<CardDTO> findAllCards() {
@@ -114,6 +116,7 @@ public class CardService {
         cardRepository.save(source);
         cardRepository.save(target);
 
+        eventPublisher.publishEvent(new TransferCompletedEvent(transactionDTO));
         return transactionDTO;
     }
 
@@ -135,4 +138,6 @@ public class CardService {
     public void deleteCard(Long id) {
         cardRepository.deleteById(id);
     }
+
+    public record TransferCompletedEvent(TransactionDTO transaction) {}
 }
